@@ -141,19 +141,73 @@ sampfun<-function(x){
 #############################################################################################
 #############################################################################################
 
-
-calc.dens<-function(hab1, newloc.vec, n.initial, inds){
-  consdens<-hab1*0
-  idens<-hab1*0
+#'Function that returns as a list: the total number of conspecifics per cell, number of infected conspecifics per cell, and normalized density
+#' @author Lauren White
+#' @param lsize - landscape layer size (one dimension)
+#' @param newloc.vec - locations in vector notation
+#' @param n.initial - number of initial conspecifics on landscapes
+#' @param inds - dataframe of current individual locations & traits
+calc.dens<-function(lsize, newloc.vec, n.initial, inds){
+  ncon<- nS<- nI<- matrix(0, nrow= lsize, ncol=lsize) 
   for(i in 1:length(newloc.vec)) {
-    consdens[newloc.vec[i]]=consdens[newloc.vec[i]]+1
+    ncon[newloc.vec[i]]=ncon[newloc.vec[i]]+1
+    if(inds$status[i]=="S"){
+      nS[newloc.vec[i]]=nS[newloc.vec[i]]+1
+    }
     if(inds$status[i]=="I"){
-      idens[newloc.vec[i]]=idens[newloc.vec[i]]+1
+      nI[newloc.vec[i]]=nI[newloc.vec[i]]+1
     }
   }
-  dens<-consdens/max(consdens) #normalize to 1 by dividiing conspecific density by maximum number of individuals found in a single cell in the landscape
-  Num<-list(consdens,idens,dens) #returns (as list): number of conspecifcs per cell, number of infected conspecifcs per cell, and normalized density
+  dens<-ncon/max(ncon) #normalize to 1 by dividiing conspecific density by maximum number of individuals found in a single cell in the landscape
+  Num<-list(ncon,nS,nI,dens) #returns (as list): number of conspecifcs per cell, number of infected conspecifcs per cell, and normalized density
   return(Num)
+}
+
+#############################################################################################
+#############################################################################################
+
+
+#    inds<-infection3(inds, consdens=as.numeric(Num[[1]]), idens=as.numeric(Num[[2]]), transProb=inf_prob, hab1=hab1)
+#' Function that determines whether not a transmission event occurs
+#' First checks to see if there are any individuals + infected infividuals present in the same cell
+#' Then calculates final transmission probability based on # of infected individuals present
+#' @param inds- dataframe with individual traits, including infection status
+#' @param consdens- number of conspecifics by cell
+#' @param idens- number of infected conspecifics by cell
+#' @param transProb- per interaction transmissioin probability
+#' @param lxy- convenience data frame for vector to xy notation
+
+#' @author Lauren White
+#' @date May 25, 2017
+#' 
+infection3<-function(inds, nS, nI, transProb, lxy){
+  i_cells<-which(nS>0 & nI>0) #Which cells have at least one infected, and at least one other susceptible individual present
+  for (i in 1:length(i_cells)){
+    loc<-lxy[i_cells[i],]
+    s_inds<-which(inds$xloc==loc$lx & inds$yloc==loc$ly & inds$status=="S")
+    i_count<-length(which(inds$xloc==loc$lx & inds$yloc==loc$ly & inds$status=="I"))
+    finalProb <- 1 - (1 - transProb)^i_count
+    transmit <- rbinom(length(s_inds), 1, finalProb)
+    new_i<-s_inds[which(transmit == 1)]
+    inds$status[new_i]<-"I"
+  } 
+  return(inds)
+}
+
+
+#############################################################################################
+#############################################################################################
+
+#'Convenience function to calculate xy coordinates that correspond to numeric length of matrix
+#'assigns numbers vertically per default settings in R
+#'column-x 
+#'row-y
+#'@param dim: dimension (1D) of landscape
+longxy<-function(dim){
+  ly <- rep(1:dim, dim)
+  lx <- rep(1:dim, each=dim)
+  lxy <- data.frame(lx,ly)
+  lxy
 }
 
 #############################################################################################
