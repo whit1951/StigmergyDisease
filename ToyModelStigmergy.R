@@ -2,7 +2,7 @@
 #' May 6, 2019
 #' Lauren White
 
-#load functions
+#load required functions to run simulation
 source('~/StigmergyDisease/StigmergyFunctions.R')
 
 #Set up initial conditions for all simulations
@@ -16,7 +16,6 @@ lxy<-longxy(lsize)
 inf_prob<-0.2 #probability of infection per interaction per time step
 
 inds<-make.inds(lsize, n.initial, nI=1) #create dataframe of individuals with one infectious individual
-landscape<-createland(lsize=lsize, N=n.initial, inds=inds, dur_scent=dur_scent) #create array of landscapes to track scent mark location and strength for each animal
 
 ##Record initial locations
 startloc<-inds$vec
@@ -24,6 +23,13 @@ newloc.vec<-startloc
 
 ##Convert vector notation to matrix coordinates
 newloc<-as.data.frame(Rmatrix(newloc.vec-1,lsize))
+
+# Create scent landscapes for each individual and for infection
+landscape<-createland(lsize=lsize, N=n.initial, inds=inds, dur_scent=dur_scent, infected= FALSE) #create array of landscapes to track scent mark location and strength for each animal
+#inf_landscape<-createland(lsize=lsize, N=n.initial, inds=inds, dur_scent=dur_scent, infected=TRUE) #create a separate landscape to keep track of infected cells
+#inf_landscape<- matrix(0, nrow= lsize, ncol= lsize) #y, x, one layer for each individual
+infected<-calc.dens(lsize=lsize, newloc.vec=newloc.vec, n.initial=n.initial, inds=inds)[[3]]
+inf_landscape<-infected*dur_scent
 
 #Initiate longterm storage for movement and infection data
 movedat<-startloc
@@ -47,23 +53,31 @@ inds$yloc<-newloc[,2] #row
 movedat<-cbind(movedat,newloc.vec)
 inds$vec<-newloc.vec
 
-#Update scent marks
-landscape[which(landscape>1)]<-landscape[which(landscape>1)]-1
-for(i in 1:n.initial)
-{
-  #array[row, col, layer]
-  landscape[ newloc$row[i], newloc$col[i], i]<-dur_scent
-}
 
 Num<-calc.dens(lsize=lsize, newloc.vec=newloc.vec, n.initial=n.initial, inds=inds)
 
 #Disease processes
+#Which individuals become infected?
 inds<-infection3(inds, nS=as.numeric(Num[[2]]), nI=as.numeric(Num[[3]]), transProb=inf_prob, lxy=lxy)
 #inds<-recover.inds(inds, gamma=rec_rate)
 
 #Update disease status lists
 infdat<-cbind(infdat,inds$status)
 N[t,] <- c(sum(inds$status=="S"), sum(inds$status=="I"), sum(inds$status=="R"))
+
+#Update scent mark landscapes (if time remaining on landscape is greater than one, subtract one time step)
+landscape[which(landscape>1)]<-landscape[which(landscape>1)]-1
+
+for(i in 1:n.initial)
+{
+  #array[row, col, layer]
+  landscape[ newloc$row[i], newloc$col[i], i]<-dur_scent #at new location, deposit scent mark of initial strength
+}
+
+# Update infection landscape (assume that deposit of infectious agents is additive/cumulative)
+inf_landscape[which(inf_landscape>1)]<-inf_landscape[which(inf_landscape>1)]-1
+inf_landscape<-Num[[3]]*10+inf_landscape
+
 if(sum(inds$status=="I")==0){ #If number of infected in individuals--> 0, stop running
   summary$duration[count]<-t-1
   for (i in t:maxtime){
