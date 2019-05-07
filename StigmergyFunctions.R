@@ -75,7 +75,6 @@ createland<- function(lsize, N, inds, dur_scent, infected)
   for(i in 1:nrow(inds))
   {
     landscape[inds$yloc[i], inds$xloc[i], i]<- dur_scent #row, column, layer
-    print(i)
   }
   }
   if(infected==TRUE){
@@ -83,7 +82,6 @@ createland<- function(lsize, N, inds, dur_scent, infected)
     for(i in 1:length(infID))
     {
       landscape[inds$yloc[i], inds$xloc[i], infID[i]]<- dur_scent #row, column, layer
-      print(i)
     }
   }
   return(landscape)
@@ -178,20 +176,19 @@ calc.dens<-function(lsize, newloc.vec, n.initial, inds){
 #############################################################################################
 
 
-#    inds<-infection3(inds, consdens=as.numeric(Num[[1]]), idens=as.numeric(Num[[2]]), transProb=inf_prob, hab1=hab1)
 #' Function that determines whether not a transmission event occurs
 #' First checks to see if there are any individuals + infected infividuals present in the same cell
 #' Then calculates final transmission probability based on # of infected individuals present
 #' @param inds- dataframe with individual traits, including infection status
-#' @param consdens- number of conspecifics by cell
-#' @param idens- number of infected conspecifics by cell
-#' @param transProb- per interaction transmissioin probability
+#' @param nS- matrix of susceptible conspecifics by cell location
+#' @param nI- matrix of infected conspecifics by cell location
+#' @param transProb- per interaction transmission probability
 #' @param lxy- convenience data frame for vector to xy notation
 
 #' @author Lauren White
-#' @date May 25, 2017
+#' @date May 6, 2019
 #' 
-infection3<-function(inds, nS, nI, transProb, lxy){
+infect_direct<-function(inds, nS, nI, transProb, lxy){
   i_cells<-which(nS>0 & nI>0) #Which cells have at least one infected, and at least one other susceptible individual present
   for (i in 1:length(i_cells)){
     loc<-lxy[i_cells[i],]
@@ -202,6 +199,38 @@ infection3<-function(inds, nS, nI, transProb, lxy){
     new_i<-s_inds[which(transmit == 1)]
     inds$status[new_i]<-"I"
   } 
+  return(inds)
+}
+
+
+#############################################################################################
+#############################################################################################
+
+#' Function that determines whether not a transmission event occurs from environmental/indirect transmission
+#' First checks to see if there are any individuals + infected infividuals present in the same cell
+#' Then calculates final transmission probability based on # of infected individuals present
+#' @param inds- dataframe with individual traits, including infection status
+#' @param nS- matrix of susceptible conspecifics by cell location
+#' @param nI- matrix of infected conspecifics by cell location
+#' @param transProb- per interaction transmission probability
+#' @param lxy- convenience data frame for vector to xy notation
+
+#' @author Lauren White
+#' @date May 7, 2019
+#' 
+infect_indirect<-function(inds, nS, nI, transProb, lxy, inf_landscape){
+  i_cells<-which(nS>0 & inf_landscape>0) #Which cells have at least one infected, and at least one other susceptible individual present
+  if(length(i_cells>0)){
+  for (i in 1:length(i_cells)){
+    loc<-lxy[i_cells[i],]
+    s_inds<-which(inds$xloc==loc$lx & inds$yloc==loc$ly & inds$status=="S")
+    i_load<-inf_landscape[[i_cells[i]]]
+    finalProb <- min(1, i_load) #if calculated load exceeds 1, floor/limit to one (for example, if multiple animals have visited same cell at same time step)
+    transmit <- rbinom(length(s_inds), 1, finalProb)
+    new_i<-s_inds[which(transmit == 1)]
+    inds$status[new_i]<-"I"
+    }
+  }
   return(inds)
 }
 
