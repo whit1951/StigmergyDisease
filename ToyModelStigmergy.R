@@ -6,15 +6,16 @@
 source('~/StigmergyDisease/StigmergyFunctions.R')
 
 #Set up initial conditions for all simulations
-lsize<-100
+lsize<-50
 n.initial <- 20 # inital population size
 n.offset<-1 #neighborhood of nine cells, including current cell
 rowcol.delta <- expand.grid(-n.offset:n.offset,-n.offset:n.offset) #possible moves for given neighborhood size
 dur_scent<-50 #how long scent marks last in the environment
 initial_load<-1 #initial pathogen load deposited into environment upon visiting a cell
-T<-500 #duration of simulation
+T<-100 #duration of simulation
 lxy<-longxy(lsize) #convenience data frame with x, y coordinates for number system of matrices in R
 inf_prob<-0.2 #probability of infection per interaction per time step
+rec_rate<-0.02
 scent_decay<-0.5 #rate at which scent cues decay from the environment (N0*exp(-scent_decay*t))
 inf_decay<-0.5 #rate at which infectious agents decay from the environment (N0*exp(-inf_decay*t))
 prob_mat<-create.prob() #probability matrix governing movement choices after scent encounter
@@ -56,11 +57,13 @@ movedat<-cbind(movedat,inds$vec)
 #Which individuals become directly infected by other conspecfics?
 Num<-calc.dens(lsize=lsize, inds=inds)
 inds<-infect_direct(inds, nS=as.numeric(Num[[2]]), nI=as.numeric(Num[[3]]), transProb=inf_prob, lxy=lxy)
-#inds<-recover.inds(inds, gamma=rec_rate)
 
 #Which individuals becom indirectly infected by environmental exposure?
 Num<-calc.dens(lsize=lsize, inds=inds) #recalculate S vs. I after direct transmission
 inds<-infect_indirect(inds, nS=as.numeric(Num[[2]]), nI=as.numeric(Num[[3]]), transProb=inf_prob, lxy=lxy, inf_landscape=inf_landscape)
+
+#Which animals recover?
+inds<-recover.inds(inds, gamma=rec_rate)
 
 #Update disease status lists
 infdat<-cbind(infdat,inds$status)
@@ -90,8 +93,8 @@ inf_landscape[which(inf_landscape>1)]<-inf_landscape[which(inf_landscape>1)]*exp
 inf_landscape<-Num[[3]]*initial_load+inf_landscape
 
 if(sum(inds$status=="I")==0){ #If number of infected in individuals--> 0, stop running
-  summary$duration[count]<-t-1
-  for (i in t:maxtime){
+  #summary$duration[count]<-t-1
+  for (i in t:T){
     N[i,]<-N[t,] #automatically fill remaining time slots with current N values
   }
   break

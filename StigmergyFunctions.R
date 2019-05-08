@@ -292,6 +292,26 @@ infect_indirect<-function(inds, nS, nI, transProb, lxy, inf_landscape){
 #############################################################################################
 #############################################################################################
 
+#' Function that allows infected individuals to recover at rate 'gamma'
+#' @param inds: the dataframe describing the current status and location of individuals in the simulation
+#' @param gamma: the recovery rate
+#' @author Lauren White
+recover.inds<-function(inds, gamma){
+  infected<-which(inds$status=="I" ) #which individuals are currently infected?
+  if(length(infected>0)){
+    rec.prob<-runif(length(infected), min=0, max=1)
+    for (i in 1:length(infected)){
+      if(rec.prob[i]<= gamma){
+        inds$status[infected[i]]<-"R"
+      }
+    }
+  }
+  return(inds)
+}
+
+#############################################################################################
+#############################################################################################
+
 #'Convenience function to calculate xy coordinates that correspond to numeric length of matrix
 #'assigns numbers vertically per default settings in R
 #'column-x 
