@@ -7,6 +7,7 @@ library(moveVis)
 library(move)
 library(magrittr)
 library(ggplot2)
+library(tidyr)
 
 #colnames(movedat)<-1:100
 #movedat$AnimalID<-1:20
@@ -17,7 +18,7 @@ rownames(movedat)<-1:nrow(movedat)
 movedat<-as.data.frame(movedat)
 movedat$time<-1:nrow(movedat)
 
-library(tidyr)
+
 movedf<-gather(movedat, key="AnimalID", value= "Vec",colnames(movedat)[1:20])
 test2<-Rmatrix(movedf$Vec-1, lsize)
 movedf$xloc<-test2$col
@@ -33,16 +34,6 @@ for(i in 1:(nrow(movedf)-1)){
   movedf$dist[i+1]<-linear_dist(movedf$xloc[i], movedf$xloc[i+1], movedf$yloc[i], movedf$yloc[i+1])
 }
 movedf$yloc[which(movedf$dist>1.5)]<-NA
-for(i in 1:nrow(movedf))
-{
-  if(movedf$dist[i]>1.5)
-  {
-    newrow<-movedf[i,]
-    newrow$yloc<-NA
-    insertRow(movedf, newrow, r=i-1)
-    print(paste("insert row",i))
-  }
-}
 
 m <- ggplot(movedf, aes(xloc, yloc, col=AnimalID))
 m + geom_path()
