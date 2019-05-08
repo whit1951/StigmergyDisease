@@ -167,7 +167,7 @@ samp_direction<-function(x){
 #############################################################################################
 #' @param possible_loc - possible movement values generated from get.neighbors function
 #' @param inds - dataframe of individual traits
-new.cell<-function(possible_loc, inds){
+new.cell<-function(possible_loc, inds, lsize){
   inds$vec<-apply(possible_loc, 1, sampfun)
   for(i in 1:nrow(inds)){
     inds$dir[i]<-which(possible_loc[i,] %in% inds$vec[i])
@@ -185,7 +185,7 @@ new.cell<-function(possible_loc, inds){
 #############################################################################################
 #' @param possible_loc - possible movement values generated from get.neighbors function
 #' @param inds - dataframe of individual traits
-new.cell.directed<-function(possible_loc, inds, prob_mat){
+new.cell.directed<-function(possible_loc, inds, prob_mat, lsize){
   for(j in 1:nrow(inds)){
     dir<-ifelse(inds$scent_exp[j]==1, inds$dir[j], 5) #if exposed to scent on previous step, use previous direction; otherwise, set all directions to equal likelihood
     inds$vec[j]<-sample(possible_loc[j,], 1, prob=prob_mat[dir,])
@@ -330,15 +330,15 @@ longxy<-function(dim){
 #Create probability matrix
 create.prob<-function(){
   prob_mat<-matrix(0, nrow=9, ncol=9) #9 directions and 9 neighboring cells
-  prob_mat[1, c(6,8,9)]<-0.33 #direction 1, upper left
-  prob_mat[2, c(7,8,9)]<-0.33# 2 = upper
-  prob_mat[3, c(4,7,8)]<-0.33# 3 = upper right 
-  prob_mat[4, c(3,6,9)]<-0.33# 4 = left
+  prob_mat[1, c(6,8,9)]<-1/3 #direction 1, upper left
+  prob_mat[2, c(7,8,9)]<-1/3# 2 = upper
+  prob_mat[3, c(4,7,8)]<-1/3# 3 = upper right 
+  prob_mat[4, c(3,6,9)]<-1/3# 4 = left
   prob_mat[5,]<- 1/9# 5 = same--> all
-  prob_mat[6, c(1,4,7)]<-0.33 # 6 = right 
-  prob_mat[7, c(2,3,6)]<-0.33# 7 = lower left 
-  prob_mat[8, c(1,2,3)]<-0.33# 8 = lower
-  prob_mat[9, c(1,2,4)]<-0.33# 9 = 9 lower right 
+  prob_mat[6, c(1,4,7)]<-1/3 # 6 = right 
+  prob_mat[7, c(2,3,6)]<-1/3# 7 = lower left 
+  prob_mat[8, c(1,2,3)]<-1/3# 8 = lower
+  prob_mat[9, c(1,2,4)]<-1/3# 9 = 9 lower right 
   return(prob_mat)
 }
 
