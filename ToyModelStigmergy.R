@@ -6,7 +6,7 @@
 source('~/StigmergyDisease/StigmergyFunctions.R')
 
 #Set up initial conditions for all simulations
-lsize<-50
+lsize<-20
 n.initial <- 20 # inital population size
 n.offset<-1 #neighborhood of nine cells, including current cell
 rowcol.delta <- expand.grid(-n.offset:n.offset,-n.offset:n.offset) #possible moves for given neighborhood size
@@ -14,7 +14,7 @@ dur_scent<-50 #how long scent marks last in the environment
 initial_load<-1 #initial pathogen load deposited into environment upon visiting a cell
 T<-100 #duration of simulation
 lxy<-longxy(lsize) #convenience data frame with x, y coordinates for number system of matrices in R
-inf_prob<-0.2 #probability of infection per interaction per time step
+inf_prob<-0.5 #probability of infection per interaction per time step
 rec_rate<-0.02
 scent_decay<-0.5 #rate at which scent cues decay from the environment (N0*exp(-scent_decay*t))
 inf_decay<-0.5 #rate at which infectious agents decay from the environment (N0*exp(-inf_decay*t))
@@ -49,7 +49,7 @@ possible_loc<-get.neighbors(inds[,2:3], mapdim=c(lsize,lsize), rowcol.delta=rowc
 
 #sample among possible new cells and udate `inds` df
 #newloc.vec<-apply(possible_loc, 1, sampfun) 
-inds<-new.cell(possible_loc,inds)
+inds<-new.cell.directed(possible_loc,inds, prob_mat=prob_mat, lsize)
 movedat<-cbind(movedat,inds$vec)
 
 
