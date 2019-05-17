@@ -133,6 +133,6 @@ StigLoop<-function(maxT, nsim, lsize, n.initial, inf_prob, rec_rate, dur_scent, 
 
 #Test
 
-tic=Sys.time()
-StigLoop(maxT=200, nsim=2, lsize=50, n.initial=20, inf_prob=0.2, rec_rate=0.01, dur_scent=10, initial_load=1, scent_decay=0.5, inf_decay=0.5)
-print(difftime(Sys.time(),tic,units="mins"))
+# tic=Sys.time()
+# StigLoop(maxT=1000, nsim=10, lsize=50, n.initial=100, inf_prob=0.1, rec_rate=0.1, dur_scent=10, initial_load=10, scent_decay=0.1, inf_decay=0.1)
+# print(difftime(Sys.time(),tic,units="mins"))
