@@ -1,23 +1,24 @@
 #' Run toy model with stigmergy functions
 #' May 6, 2019
 #' Lauren White
+#' can use `movedat` output with `PlottingMovement.R` script
 
 #load required functions to run simulation
 source('~/StigmergyDisease/StigmergyFunctions.R')
 
 #Set up initial conditions for all simulations
-lsize<-20
-n.initial <- 20 # inital population size
+lsize<-50
+n.initial <- 250 # inital population size
 n.offset<-1 #neighborhood of nine cells, including current cell
 rowcol.delta <- expand.grid(-n.offset:n.offset,-n.offset:n.offset) #possible moves for given neighborhood size
-dur_scent<-50 #how long scent marks last in the environment
+dur_scent<-10 #initial scent mark deposit strength
 initial_load<-1 #initial pathogen load deposited into environment upon visiting a cell
-T<-100 #duration of simulation
+T<-50 #duration of simulation
 lxy<-longxy(lsize) #convenience data frame with x, y coordinates for number system of matrices in R
 inf_prob<-0.5 #probability of infection per interaction per time step
-rec_rate<-0.02
+rec_rate<-0.01
 scent_decay<-0.5 #rate at which scent cues decay from the environment (N0*exp(-scent_decay*t))
-inf_decay<-0.5 #rate at which infectious agents decay from the environment (N0*exp(-inf_decay*t))
+inf_decay<-0.1 #rate at which infectious agents decay from the environment (N0*exp(-inf_decay*t))
 prob_mat<-create.prob() #probability matrix governing movement choices after scent encounter
 
 inds<-make.inds(n.initial, lsize, nI=1) #create dataframe of individuals with one infectious individual
@@ -92,13 +93,13 @@ for(j in 1:n.initial)
 inf_landscape[which(inf_landscape>1)]<-inf_landscape[which(inf_landscape>1)]*exp(-inf_decay*1)
 inf_landscape<-Num[[3]]*initial_load+inf_landscape
 
-if(sum(inds$status=="I")==0){ #If number of infected in individuals--> 0, stop running
-  #summary$duration[count]<-t-1
-  for (i in t:T){
-    N[i,]<-N[t,] #automatically fill remaining time slots with current N values
-  }
-  break
-}
+# if(sum(inds$status=="I")==0){ #If number of infected in individuals--> 0, stop running
+#   #summary$duration[count]<-t-1
+#   for (i in t:T){
+#     N[i,]<-N[t,] #automatically fill remaining time slots with current N values
+#   }
+#   break
+# }
 
 }
 
