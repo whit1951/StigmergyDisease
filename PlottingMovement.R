@@ -19,7 +19,7 @@ movedat<-as.data.frame(movedat)
 movedat$time<-1:nrow(movedat)
 
 
-movedf<-gather(movedat, key="AnimalID", value= "Vec",colnames(movedat)[1:20])
+movedf<-gather(movedat, key="AnimalID", value= "Vec",colnames(movedat)[1:n.initial])
 test2<-Rmatrix(movedf$Vec-1, lsize)
 movedf$xloc<-test2$col
 movedf$yloc<-test2$row
@@ -36,7 +36,7 @@ for(i in 1:(nrow(movedf)-1)){
 movedf$yloc[which(movedf$dist>1.5)]<-NA
 
 m <- ggplot(movedf, aes(xloc, yloc, col=AnimalID))
-m + geom_path()
+m + geom_path(show.legend=FALSE)
 
 V2<-movedf[movedf$AnimalID=="V2",]
 V2$yloc[which(V2$dist>1.5)]<-NA
