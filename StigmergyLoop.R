@@ -10,13 +10,13 @@
 source('~/StigmergyDisease/StigmergyFunctions.R')
 
 #Set up initial conditions/parameters to loop for simulations
-lsize<-50 #landscape size
+lsize<-10 #landscape size
 n.initial <- 10 # inital population size
 n.offset<-1 #neighborhood of nine cells, including current cell
 rowcol.delta <- expand.grid(-n.offset:n.offset,-n.offset:n.offset) #possible moves for given neighborhood size
-dur_scent<-50 #how long scent marks last in the environment
+dur_scent<-1 #strength of scent mark upon initial deposition
 initial_load<-1 #initial pathogen load deposited into environment upon visiting a cell
-T<-200 #duration of simulation
+maxT<-200 #duration of simulation
 lxy<-longxy(lsize) #convenience data frame with x, y coordinates for number system of matrices in R
 inf_prob<-0.2 #probability of infection per interaction per time step
 rec_rate<-0.02
@@ -29,7 +29,7 @@ nsim<-10 #number of simulations to iterate
 mydata<-list(inds=NULL, landscape=NULL, N=NULL, movedat=NULL, infdat=NULL)
 filename<-paste("lsize", lsize, "n.initial", n.initial, "inf", inf_prob, "rec", rec_rate,"dur_scent",dur_scent,"initial_load",initial_load, "scent_decay", scent_decay, "inf_decay", inf_decay, sep="")
 summary<-data.frame(lsize=rep(lsize, times=nsim), n.initial=rep(n.initial, times=nsim), inf_prob=rep(inf_prob, times=nsim), rec_rate=rep(rec_rate, times=nsim), dur_scent=rep(dur_scent, times=nsim), initial_load=rep(initial_load, times=nsim), scent_decay=rep(scent_decay, times=nsim), inf_decay= rep(inf_decay, times=nsim), duration=NaN, max_I=NaN, max_prevalence=NaN)
-infected<-matrix(NaN, nrow=T, ncol=nsim)
+infected<-matrix(NaN, nrow=maxT, ncol=nsim)
 
 
 for(count in 1:nsim){
@@ -55,7 +55,7 @@ for(count in 1:nsim){
   N <-data.frame(S=NaN, I=NaN, R=NaN)
   N[1,] <- c(sum(inds$status=="S"), sum(inds$status=="I"), sum(inds$status=="R"))
 
-  for(t in 2:T){
+  for(t in 2:maxT){
     
     #generate list of possible cells that each animal *could* select
     possible_loc<-get.neighbors(inds[,2:3], mapdim=c(lsize,lsize), rowcol.delta=rowcol.delta, n.offset= n.offset, torus=TRUE, na.val=0)
@@ -69,8 +69,8 @@ for(count in 1:nsim){
     
     #Disease processes
     #Which individuals become directly infected by other conspecfics?
-    Num<-calc.dens(lsize=lsize, inds=inds)
-    inds<-infect_direct(inds, nS=as.numeric(Num[[2]]), nI=as.numeric(Num[[3]]), transProb=inf_prob, lxy=lxy)
+    # Num<-calc.dens(lsize=lsize, inds=inds)
+    # inds<-infect_direct(inds, nS=as.numeric(Num[[2]]), nI=as.numeric(Num[[3]]), transProb=inf_prob, lxy=lxy)
     
     #Which individuals becom indirectly infected by environmental exposure?
     Num<-calc.dens(lsize=lsize, inds=inds) #recalculate S vs. I after direct transmission
@@ -85,9 +85,9 @@ for(count in 1:nsim){
     
     #Update scent mark landscapes (if time remaining on landscape is greater than one, subtract one time step)
     #landscape[which(landscape>1)]<-landscape[which(landscape>1)]-1
-    landscape[which(landscape>1)]<-landscape[which(landscape>1)]*exp(-scent_decay*1)
+    landscape<-landscape*exp(-scent_decay*1)
     
-    for(i in 1:n.initial)
+    for(i in 1:n.initial) #for each individual in simulation
     {
       #array[row, col, layer]
       landscape[inds$y[i], inds$x[i], i]<-dur_scent #at new location, deposit scent mark of initial strength
@@ -98,17 +98,18 @@ for(count in 1:nsim){
     for(j in 1:n.initial)
     {
       scent_sum<-apply(landscape[,,-j], MARGIN=c(1, 2), sum) #sum scent landscapes minus the current individual's profile
-      inds$scent_exp[j]<-ifelse(scent_sum[inds$vec[j]]>0, 1, 0) #if scent lingers in the new cell, assign a value of 1, otherwise 0
+      inds$scent_exp[j]<-scent_sum[inds$vec[j]] #reassign scent exposure value (can be greater than one)
+        #ifelse(scent_sum[inds$vec[j]]>0, 1, 0) #if scent lingers in the new cell, assign a value of 1, otherwise 0
     }
     
     # Update infection landscape (assume that deposit of infectious agents is additive/cumulative)
     #inf_landscape[which(inf_landscape>1)]<-inf_landscape[which(inf_landscape>1)]-1
-    inf_landscape[which(inf_landscape>1)]<-inf_landscape[which(inf_landscape>1)]*exp(-inf_decay*1)
+    inf_landscape<-inf_landscape*exp(-inf_decay*1)
     inf_landscape<-Num[[3]]*initial_load+inf_landscape
     
     if(sum(inds$status=="I")==0){ #If number of infected in individuals--> 0, stop running
       summary$duration[count]<-t-1
-      for (i in t:T){
+      for (i in t:maxT){
         N[i,]<-N[t,] #automatically fill remaining time slots with current N values
       }
       break
