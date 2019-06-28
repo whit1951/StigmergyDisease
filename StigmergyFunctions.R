@@ -187,8 +187,17 @@ new.cell<-function(possible_loc, inds, lsize){
 #' @param inds - dataframe of individual traits
 new.cell.directed<-function(possible_loc, inds, prob_mat, lsize){
   for(j in 1:nrow(inds)){
-    dir<-ifelse(inds$scent_exp[j]==1, inds$dir[j], 5) #if exposed to scent on previous step, use previous direction; otherwise, set all directions to equal likelihood
-    inds$vec[j]<-sample(possible_loc[j,], 1, prob=prob_mat[dir,])
+    if(sum(inds$scent_exp>0)){
+      prob_scent<-inds$scent_exp[j]/sum(inds$scent_exp) #normalize?
+      prob_scent<-min(1, prob_scent) #threshold? 
+      dir<- ifelse(rbinom(1,1, prob_scent)==1, inds$dir[j], 5) #if the coin flip =1, use previous direction; otherwise, set all directions to equal likelihood
+    # dir<-ifelse(inds$scent_exp[j]>0, inds$dir[j], 5) #if exposed to scent on previous step, use previous direction; otherwise, set all directions to equal likelihood
+    }
+    if(sum(inds$scent_exp==0)){
+      dir<-5
+    }
+      inds$vec[j]<-sample(possible_loc[j,], 1, prob=prob_mat[dir,])
+
   }
   for(i in 1:nrow(inds)){
     inds$dir[i]<-which(possible_loc[i,] %in% inds$vec[i])
@@ -209,6 +218,7 @@ new.cell.directed<-function(possible_loc, inds, prob_mat, lsize){
 #' @author Lauren White
 #' @param lsize - landscape layer size (one dimension)
 #' @param inds - dataframe of current individual locations & traits including inds$vec
+#' @return Num - (as list): number of conspecifcs per cell [[1]], number of infected conspecifcs per cell [[2]], and normalized density [[3]]
 calc.dens<-function(lsize, inds){
   loc.vec<-inds$vec
   ncon<- nS<- nI<- matrix(0, nrow= lsize, ncol=lsize) 
@@ -273,7 +283,7 @@ infect_direct<-function(inds, nS, nI, transProb, lxy){
 #' @date May 7, 2019
 #' 
 infect_indirect<-function(inds, nS, nI, transProb, lxy, inf_landscape){
-  i_cells<-which(nS>0 & inf_landscape>0) #Which cells have at least one infected, and at least one other susceptible individual present
+  i_cells<-which(nS>0 & inf_landscape>0) #which cells have susceptible individuals and environmental pathogen load?
   if(length(i_cells>0)){
   for (i in 1:length(i_cells)){
     loc<-lxy[i_cells[i],]
@@ -329,7 +339,7 @@ longxy<-function(dim){
 
 #Create probability matrix
 create.prob<-function(){
-  prob_mat<-matrix(0, nrow=9, ncol=9) #9 directions and 9 neighboring cells
+  prob_mat<-matrix(0, nrow=9, ncol=9) #9 directions (col) and 9 neighboring cells (row)
   prob_mat[1, c(6,8,9)]<-1/3 #direction 1, upper left
   prob_mat[2, c(7,8,9)]<-1/3# 2 = upper
   prob_mat[3, c(4,7,8)]<-1/3# 3 = upper right 
