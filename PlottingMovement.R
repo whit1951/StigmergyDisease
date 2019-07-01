@@ -35,12 +35,12 @@ for(i in 1:(nrow(movedf)-1)){
 }
 movedf$yloc[which(movedf$dist>1.5)]<-NA
 
-m <- ggplot(movedf, aes(xloc, yloc, col=AnimalID))
+m <- ggplot(movedf, aes(xloc, yloc, col=AnimalID, alpha=time))
 m + geom_path(show.legend=FALSE)
 
 V2<-movedf[movedf$AnimalID=="V2",]
 V2$yloc[which(V2$dist>1.5)]<-NA
-m <- ggplot(V2, aes(xloc, yloc))
+m <- ggplot(V2, aes(xloc, yloc, alpha=time))
 m + geom_path(na.rm=TRUE)
 
 
