@@ -2,22 +2,20 @@
 #' @author Lauren White
 #' @date May 7, 2019
 
-#install.packages('moveVis')
-library(moveVis)
-library(move)
+
 library(magrittr)
 library(ggplot2)
 library(tidyr)
+library(gganimate)
+# devtools::install_github('thomasp85/transformr')
+library(transformr)
+library(magick)
 
-#colnames(movedat)<-1:100
-#movedat$AnimalID<-1:20
-#test<-matrix(movedat, dimnames=list(t(outer(colnames(movedat), rownames(movedat), FUN=paste)), NULL))
-#movedf<-data.frame(Time= rep(1:100, each=20), AnimalID= rep(1:20, each=100), vec=NA, xloc=NA, yloc=NA)
+
 movedat<-t(movedat)
 rownames(movedat)<-1:nrow(movedat)
 movedat<-as.data.frame(movedat)
 movedat$time<-1:nrow(movedat)
-
 
 movedf<-gather(movedat, key="AnimalID", value= "Vec",colnames(movedat)[1:n.initial])
 test2<-Rmatrix(movedf$Vec-1, lsize)
@@ -34,9 +32,19 @@ for(i in 1:(nrow(movedf)-1)){
   movedf$dist[i+1]<-linear_dist(movedf$xloc[i], movedf$xloc[i+1], movedf$yloc[i], movedf$yloc[i+1])
 }
 movedf$yloc[which(movedf$dist>1.5)]<-NA
+colnames(movedf)[colnames(movedf)=="time"] <- "time_step"
 
-m <- ggplot(movedf, aes(xloc, yloc, col=AnimalID, alpha=time))
-m + geom_path(show.legend=FALSE)
+#static
+m <- ggplot(movedf, aes(xloc, yloc, color=AnimalID, alpha=time_step))+ 
+  geom_path(show.legend=FALSE)+xlab(NULL)+ylab(NULL)
+m
+
+#animate with gganimate
+m <- ggplot(movedf, aes(xloc, yloc, color=AnimalID))+ geom_point(show.legend=FALSE)+xlab(NULL)+ylab(NULL)
+m + transition_time(time_step) +
+  shadow_trail(distance=0.01, size=0.75, alpha=0.75, max_frames=5) +
+  labs(title = "Time step: {frame_time}")
+anim_save("stigmergy.gif")
 
 V2<-movedf[movedf$AnimalID=="V2",]
 V2$yloc[which(V2$dist>1.5)]<-NA
@@ -44,26 +52,17 @@ m <- ggplot(V2, aes(xloc, yloc, alpha=time))
 m + geom_path(na.rm=TRUE)
 
 
-
-###################################################
-#NEED To convert time to POSIXct in order to animate
-#######################################################
-movedf$time<-as.POSIXct(movedf$time, format="%Y", origin="0000")
-
-test<-df2move(movedf, proj=NULL, x="xloc", y="yloc", time="time", track_id="AnimalID")
-test<-move(movedf$xloc, movedf$yloc, time=movedf$time, proj= "+init=epsg:4326", animal=movedf$AnimalID)
-
-m <- align_move(test, res = 5, digit = 0, unit = "secs")
-
-# create spatial frames with a OpenStreetMap watercolour map
-frames <- frames_spatial(m, path_colours = 1:n.initial,
-                         map_service = "osm", map_type = "watercolor", alpha = 0.5) %>% 
-  add_labels(x = "Longitude", y = "Latitude") %>% # add some customizations, such as axis labels
-  add_northarrow() %>% 
-  add_scalebar() %>% 
-  add_timestamps(m, type = "label") %>% 
-  add_progress()
-
-frames[[1]] # preview one of the frames, e.g. the 100th frame
-animate_frames(frames, out_file = "/research-home/lwhite/Puma-movement/test.gif")
-
+########################
+#EXAMPLE
+library(gapminder)
+head(gapminder)
+p <- ggplot(
+  gapminder, 
+  aes(x = gdpPercap, y=lifeExp, size = pop, colour = country)
+) +
+  geom_point(show.legend = FALSE, alpha = 0.7) +
+  scale_color_viridis_d() +
+  scale_size(range = c(2, 12)) +
+  scale_x_log10() +
+  labs(x = "GDP per capita", y = "Life expectancy")
+p
