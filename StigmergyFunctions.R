@@ -199,7 +199,7 @@ new.cell<-function(possible_loc, inds, lsize, dist_weights){
 new.cell.directed<-function(possible_loc, inds, prob_mat, lsize, scent_load){
   for(j in 1:nrow(inds)){
     
-      prob_scent<-inds$scent_exp[j]/scent_load #normalize?
+      prob_scent<-inds$scent_exp[j] #/scent_load #normalize?
       prob_scent<-min(1, prob_scent) #threshold? 
       dir<- ifelse(rbinom(1,1, prob_scent)==1, inds$dir[j], 5) #if the coin flip =1, use previous direction; otherwise, set all directions to equal likelihood
     # dir<-ifelse(inds$scent_exp[j]>0, inds$dir[j], 5) #if exposed to scent on previous step, use previous direction; otherwise, set all directions to equal likelihood
