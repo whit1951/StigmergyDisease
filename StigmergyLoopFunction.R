@@ -18,7 +18,10 @@ source('~/StigmergyDisease/StigmergyFunctions.R')
 #'@param inf_decay - rate at which scent cues decay from the environment (N0*exp(-scent_decay*t))
 #'@param dir_move - boolean (TRUE OR FALSE)- is movement directed in response to scent cues or random walk?
 StigLoop<-function(maxT, nsim, lsize, n.initial, rec_rate, scent_load, pathogen_load, scent_decay, inf_decay, dir_move){
-  
+  # Reproducible random numbers in parallel 
+  # https://bookdown.org/rdpeng/rprogdatascience/parallel-computation.html#generating-random-numbers-1
+  RNGkind("L'Ecuyer-CMRG")
+  set.seed(2718)
   
   #Set up initial conditions/parameters to loop for simulations
   n.offset<-1 #neighborhood of nine cells, including current cell
@@ -131,6 +134,6 @@ StigLoop<-function(maxT, nsim, lsize, n.initial, rec_rate, scent_load, pathogen_
 
 #Test
 
-tic=Sys.time()
-StigLoop(maxT=200, nsim=2, lsize=50, n.initial=50, rec_rate=0.01, scent_load=0.1, pathogen_load=10, scent_decay=0.01, inf_decay=0.01, dir_move=FALSE)
-print(difftime(Sys.time(),tic,units="mins"))
+# tic=Sys.time()
+# StigLoop(maxT=200, nsim=1, lsize=50, n.initial=50, rec_rate=0.01, scent_load=0.1, pathogen_load=0.5, scent_decay=0.01, inf_decay=0.01, dir_move=TRUE)
+# print(difftime(Sys.time(),tic,units="mins"))
