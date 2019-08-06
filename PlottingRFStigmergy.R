@@ -49,7 +49,7 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 
 
 
-## Figure 1
+## Figure 1- randomForest variable importance results
 #Random forest variable importance results
 
 library(randomForest)
@@ -76,9 +76,8 @@ A<-ggplot(imp_logit, aes(x=reorder(X, X.IncMSE), y=X.IncMSE)) +
   #               width=.2,
   #               position=position_dodge(.9)) +
   scale_x_discrete(element_blank(), labels = c("scent_decay" = expression(delta), "rec_rate"=expression(gamma),
-                                               "dur_scent" =  expression(eta[0]),"n.initial" = "N", "inf_prob" = expression(beta),
-                                               "initial_load" = expression(kappa[0]), "inf_decay"=expression(alpha))) +
-  #ylab("Mean Decrease in Accuracy (%IncMSE)") +
+                                               "scent_load" =  expression(eta[0]),"n.initial" = "N", "dir_move" = "m",
+                                               "pathogen_load" = expression(kappa[0]), "inf_decay"=expression(alpha))) +  #ylab("Mean Decrease in Accuracy (%IncMSE)") +
   ylab("")+
   theme_bw()+
   ggtitle("(A)") + #" Variable Importance for Epidemic \nSuccess") +
@@ -97,8 +96,8 @@ B<-ggplot(imp_logitprev, aes(x=reorder(X, X.IncMSE), y=X.IncMSE)) +
   #               width=.2,
   #               position=position_dodge(.9)) +
   scale_x_discrete(element_blank(), labels = c("scent_decay" = expression(delta), "rec_rate"=expression(gamma),
-                                               "dur_scent" =  expression(eta[0]),"n.initial" = "N", "inf_prob" = expression(beta),
-                                               "initial_load" = expression(kappa[0]), "inf_decay"=expression(alpha))) +
+                                               "scent_load" =  expression(eta[0]),"n.initial" = "N", "dir_move" = "m",
+                                               "pathogen_load" = expression(kappa[0]), "inf_decay"=expression(alpha))) +
   #ylab("Mean Decrease in Accuracy (%IncMSE)") +
   ylab("")+
   theme_bw()+
@@ -117,8 +116,87 @@ C<-ggplot(imp_logitdur, aes(x=reorder(X, X.IncMSE), y=X.IncMSE)) +
   #               width=.2,
   #               position=position_dodge(.9)) +
   scale_x_discrete(element_blank(), labels = c("scent_decay" = expression(delta), "rec_rate"=expression(gamma),
-                                               "dur_scent" =  expression(eta[0]),"n.initial" = "N", "inf_prob" = expression(beta),
-                                               "initial_load" = expression(kappa[0]), "inf_decay"=expression(alpha))) +
+                                               "scent_load" =  expression(eta[0]),"n.initial" = "N", "dir_move" = "m",
+                                               "pathogen_load" = expression(kappa[0]), "inf_decay"=expression(alpha))) +
+  ylab("Mean Decrease in Accuracy (%IncMSE)") +
+  theme_bw()+
+  ggtitle("(C)") + #" Variable Importance for Epidemic \nDuration|Success") +
+  
+  theme(axis.text=element_text(size=14), plot.title = element_text(size = 16)) +
+  theme(plot.margin=unit(c(-0.25,0.1,0,0), "cm"))+
+  coord_flip()
+C
+#setwd()
+# tiff("Figure1_RF.tiff", height =10 , width =8.7, units = "cm", compression = "lzw", res = 1200)
+multiplot(A, B, C, cols=1)
+# dev.off()
+
+
+
+# Figure 2- party package variable importance results ---------------------
+
+#Load importance values (party package)
+imp_logit<-read.csv("partyRF_logit500.csv")
+imp_logitprev<-read.csv("partyRF_logitprev500.csv")
+imp_logitdur<-read.csv("partyRF_logitdur500.csv")
+
+#Order according to increasing node purity
+imp_logit<-imp_logit[order(imp_logit$x),]
+imp_logitdur<-imp_logitdur[order(imp_logitdur$x),] 
+imp_logitprev<-imp_logitprev[order(imp_logitprev$x),] 
+
+#In ggplot
+A<-ggplot(imp_logit, aes(x=reorder(X,x), y=x)) + 
+  geom_bar(position=position_dodge(), stat="identity",
+           colour="black", # Use black outlines,
+           size=.3) +      # Thinner lines
+  # geom_errorbar(aes(ymin=X.IncMSE-SD, ymax=X.IncMSE+SD),
+  #               size=.3,    # Thinner lines
+  #               width=.2,
+  #               position=position_dodge(.9)) +
+  scale_x_discrete(element_blank(), labels = c("scent_decay" = expression(delta), "rec_rate"=expression(gamma),
+                                               "scent_load" =  expression(eta[0]),"n.initial" = "N", "dir_move" = "m",
+                                               "pathogen_load" = expression(kappa[0]), "inf_decay"=expression(alpha))) +  #ylab("Mean Decrease in Accuracy (%IncMSE)") +
+  ylab("")+
+  theme_bw()+
+  ggtitle("(A)") + #" Variable Importance for Epidemic \nSuccess") +
+  theme(axis.text=element_text(size=14), plot.title = element_text(size = 16)) +
+  theme(plot.margin=unit(c(0.1,0.1,0,0), "cm"))+
+  coord_flip()
+# theme_bw(axis.text=element_text(size=14),    axis.title=element_text(size=14,face="bold"), plot.title = element_text(size = 40))
+A
+#imp_logitprev$SD<-rep(0.0000001, times=nrow(imp_logitprev))
+B<-ggplot(imp_logitprev, aes(x=reorder(X,x), y=x)) + 
+  geom_bar(position=position_dodge(), stat="identity",
+           colour="black", # Use black outlines,
+           size=.3) +      # Thinner lines
+  # geom_errorbar(aes(ymin=X.IncMSE-SD, ymax=X.IncMSE+SD),
+  #               size=.3,    # Thinner lines
+  #               width=.2,
+  #               position=position_dodge(.9)) +
+  scale_x_discrete(element_blank(), labels = c("scent_decay" = expression(delta), "rec_rate"=expression(gamma),
+                                               "scent_load" =  expression(eta[0]),"n.initial" = "N", "dir_move" = "m",
+                                               "pathogen_load" = expression(kappa[0]), "inf_decay"=expression(alpha))) +
+  #ylab("Mean Decrease in Accuracy (%IncMSE)") +
+  ylab("")+
+  theme_bw()+
+  ggtitle("(B)") + #" Variable Importance for Maximum \nPrevalence|Success") +
+  theme(axis.text=element_text(size=14), plot.title = element_text(size = 16)) +
+  theme(plot.margin=unit(c(-0.25,0.1,0,0), "cm"))+
+  coord_flip()
+B
+#imp_logitdur$SD<-rep(100, times=nrow(imp_logitdur))
+C<-ggplot(imp_logitdur, aes(x=reorder(X,x), y=x)) + 
+  geom_bar(position=position_dodge(), stat="identity",
+           colour="black", # Use black outlines,
+           size=.3) +      # Thinner lines
+  # geom_errorbar(aes(ymin=X.IncMSE-SD, ymax=X.IncMSE+SD),
+  #               size=.3,    # Thinner lines
+  #               width=.2,
+  #               position=position_dodge(.9)) +
+  scale_x_discrete(element_blank(), labels = c("scent_decay" = expression(delta), "rec_rate"=expression(gamma),
+                                               "scent_load" =  expression(eta[0]),"n.initial" = "N", "dir_move" = "m",
+                                               "pathogen_load" = expression(kappa[0]), "inf_decay"=expression(alpha))) +
   ylab("Mean Decrease in Accuracy (%IncMSE)") +
   theme_bw()+
   ggtitle("(C)") + #" Variable Importance for Epidemic \nDuration|Success") +
