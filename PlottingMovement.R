@@ -11,6 +11,7 @@ library(gganimate)
 library(transformr)
 library(magick)
 
+source('~/StigmergyDisease/ToyModelStigmergy.R')
 
 movedat<-t(movedat)
 rownames(movedat)<-1:nrow(movedat)
@@ -34,10 +35,13 @@ for(i in 1:(nrow(movedf)-1)){
 movedf$yloc[which(movedf$dist>1.5)]<-NA
 colnames(movedf)[colnames(movedf)=="time"] <- "time_step"
 
-#static
-m <- ggplot(movedf, aes(xloc, yloc, color=AnimalID, alpha=time_step))+ 
-  geom_path(show.legend=FALSE)+xlab(NULL)+ylab(NULL)
+## Fig. 2 static movement trajectories
+ # m <- ggplot(movedf, aes(xloc, yloc, color=AnimalID, alpha=time_step*0.01))+
+    m <- ggplot(movedf, aes(xloc, yloc, color=AnimalID))+
+  geom_path(show.legend=FALSE)+xlab(NULL)+ylab(NULL)+
+  theme(legend.position = "none") 
 m
+
 
 #animate with gganimate
 m <- ggplot(movedf, aes(xloc, yloc, color=AnimalID))+ geom_point(show.legend=FALSE)+xlab(NULL)+ylab(NULL)
