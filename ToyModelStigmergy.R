@@ -8,23 +8,24 @@ source('~/StigmergyDisease/StigmergyFunctions.R')
 
 #Set up initial conditions for all simulations
 lsize<-50
-n.initial <- 250 # inital population size
+n.initial <- 50 # inital population size
 n.offset<-1 #neighborhood of nine cells, including current cell
 rowcol.delta <- expand.grid(-n.offset:n.offset,-n.offset:n.offset) #possible moves for given neighborhood size
-dur_scent<-10 #initial scent mark deposit strength
+dist_weights<- get.dist.weight(rowcol.delta)
+scent_load<-10 #initial scent mark deposit strength
 initial_load<-1 #initial pathogen load deposited into environment upon visiting a cell
-T<-50 #duration of simulation
+maxT<-100 #duration of simulation
 lxy<-longxy(lsize) #convenience data frame with x, y coordinates for number system of matrices in R
 inf_prob<-0.5 #probability of infection per interaction per time step
 rec_rate<-0.01
-scent_decay<-0.5 #rate at which scent cues decay from the environment (N0*exp(-scent_decay*t))
+scent_decay<-0.01 #rate at which scent cues decay from the environment (N0*exp(-scent_decay*t))
 inf_decay<-0.1 #rate at which infectious agents decay from the environment (N0*exp(-inf_decay*t))
-prob_mat<-create.prob() #probability matrix governing movement choices after scent encounter
+prob_mat<-create.prob(dist_weights) #probability matrix governing movement choices after scent encounter
 
 inds<-make.inds(n.initial, lsize, nI=1) #create dataframe of individuals with one infectious individual
 
 # Create scent landscapes for each individual and for infection
-landscape<-createland(lsize=lsize, inds=inds, dur_scent=dur_scent, infected= FALSE) #create array of landscapes to track scent mark location and strength for each animal
+landscape<-createland(lsize=lsize, inds=inds, scent_load=scent_load, infected= FALSE) #create array of landscapes to track scent mark location and strength for each animal
 #inf_landscape<-createland(lsize=lsize, N=n.initial, inds=inds, dur_scent=dur_scent, infected=TRUE) #create a separate landscape to keep track of infected cells
 #inf_landscape<- matrix(0, nrow= lsize, ncol= lsize) #y, x, one layer for each individual
 Num<-calc.dens(lsize=lsize, inds=inds)
@@ -42,7 +43,7 @@ infdat<-inds$status
 N <-data.frame(S=NaN, I=NaN, R=NaN)
 N[1,] <- c(sum(inds$status=="S"), sum(inds$status=="I"), sum(inds$status=="R"))
 
-for(t in 2:T){
+for(t in 2:maxT){
   
   
 #generate list of possible cells that each animal *could* select
@@ -61,7 +62,7 @@ inds<-infect_direct(inds, nS=as.numeric(Num[[2]]), nI=as.numeric(Num[[3]]), tran
 
 #Which individuals becom indirectly infected by environmental exposure?
 Num<-calc.dens(lsize=lsize, inds=inds) #recalculate S vs. I after direct transmission
-inds<-infect_indirect(inds, nS=as.numeric(Num[[2]]), nI=as.numeric(Num[[3]]), transProb=inf_prob, lxy=lxy, inf_landscape=inf_landscape)
+inds<-infect_indirect(inds, nS=as.numeric(Num[[2]]), nI=as.numeric(Num[[3]]), lxy=lxy, inf_landscape=inf_landscape)
 
 #Which animals recover?
 inds<-recover.inds(inds, gamma=rec_rate)
