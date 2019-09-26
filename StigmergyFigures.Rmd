@@ -66,6 +66,8 @@ merged_data<-read.csv("stig_summary.csv")
 ##Make some sub data sets by density and recovery rate
 size50<-merged_data[which(merged_data$n.initial==50),]
 size100<-merged_data[which(merged_data$n.initial==100),]
+size150<-merged_data[which(merged_data$n.initial==150),]
+
 
 sub_dT_r0.01<-merged_data[which(merged_data$dir_move==TRUE & merged_data$rec_rate==0.01),]
 sub_dT_r0.05<-merged_data[which(merged_data$dir_move==TRUE & merged_data$rec_rate==0.05),]
@@ -78,6 +80,10 @@ sub_n50_dT_r0.1<-merged_data[which(merged_data$dir_move==TRUE & merged_data$rec_
 sub_n100_dT_r0.01<-merged_data[which(merged_data$dir_move==TRUE & merged_data$rec_rate==0.01 & merged_data$n.initial==100),]
 sub_n100_dT_r0.05<-merged_data[which(merged_data$dir_move==TRUE & merged_data$rec_rate==0.05 & merged_data$n.initial==100),]
 sub_n100_dT_r0.1<-merged_data[which(merged_data$dir_move==TRUE & merged_data$rec_rate==0.1 & merged_data$n.initial==100),]
+
+sub_n150_dT_r0.01<-merged_data[which(merged_data$dir_move==TRUE & merged_data$rec_rate==0.01 & merged_data$n.initial==150),]
+sub_n150_dT_r0.05<-merged_data[which(merged_data$dir_move==TRUE & merged_data$rec_rate==0.05 & merged_data$n.initial==150),]
+sub_n150_dT_r0.1<-merged_data[which(merged_data$dir_move==TRUE & merged_data$rec_rate==0.1 & merged_data$n.initial==150),]
 
 ```
 
@@ -200,7 +206,49 @@ multiplot(A, B, C, cols=1)
 dev.off()
 ```
 
+
 ## Figure 4
+```{r}
+gg<- ggplot(data=size150, aes(y=max_prevalence, x=as.factor(rec_rate)))
+#gg<- gg+ geom_bar(stat="identity", position=position_dodge(), colour="black")+ facet_grid(Rec.prob. ~ percep, scales= "free_x", labeller=label_both)
+gg<-gg+ geom_boxplot()+ facet_grid(dir_move~ inf_decay, scales= "free_x", labeller= labeller(
+  dir_move = c("FALSE" = "Random", "TRUE"="Stigmergy"),
+  inf_decay = c("0.01" = "Slow pathogen decay", "0.1"="Med. pathogen decay", "1" = "Fast pathogen decay")))
+gg<- gg+ labs(x = expression(Recovery~rate~(gamma)), y = "Maximum prevalence") #,title="(A)")
+#gg<- gg+ theme(axis.title.x = element_text(face="bold", size=10),title=element_text(face="bold", size=10))
+gg<- gg + theme(axis.text = element_text(size=12))
+gg<- gg + theme(axis.text.x =element_text(vjust= 0, angle=-90))
+gg<- gg + theme(axis.title = element_text(vjust=0.5, size=10))
+gg<- gg + theme(strip.text = element_text(vjust=0.5, size=8))
+gg<- gg + theme(plot.title = element_text(size = 10))
+gg<- gg + theme(plot.margin=unit(c(0.1,0.1,0,0.1), "cm"))
+gg<- gg + ggtitle("(A)")
+#gg<-gg + geom_text(data = means , aes(label = duration, y = duration + 0.08))
+gg
+
+hh<- ggplot(data=size150, aes(y=duration, x=as.factor(rec_rate)))
+#hh<- hh+ geom_bar(stat="identity", position=position_dodge(), colour="black")+ facet_grid(Rec.prob. ~ percep, scales= "free_x", labeller=label_both)
+hh<-hh+ geom_boxplot()+ facet_grid(dir_move~ inf_decay, scales= "free_x", labeller= labeller(
+  dir_move = c("FALSE" = "Random", "TRUE"="Stigmergy"),
+  inf_decay = c("0.01" = "Slow pathogen decay", "0.1"="Med. pathogen decay", "1" = "Fast pathogen decay")))
+hh<- hh+ labs(x = expression(Recovery~rate~(gamma)), y = "Duration") #,title="(A)")
+#hh<- hh+ theme(axis.title.x = element_text(face="bold", size=10),title=element_text(face="bold", size=10))
+hh<- hh + theme(axis.text = element_text(size=12))
+hh<- hh + theme(axis.text.x =element_text(vjust= 0, angle=-90))
+hh<- hh + theme(axis.title = element_text(vjust=0.5, size=10))
+hh<- hh + theme(strip.text = element_text(vjust=0.5, size=8))
+hh<- hh + theme(plot.title = element_text(size = 10))
+hh<- hh + theme(plot.margin=unit(c(0.1,0.1,0,0.1), "cm"))
+hh<- hh + ggtitle("(B)")
+#hh<-hh + geom_text(data = means , aes(label = duration, y = duration + 0.08))
+hh
+
+tiff("Fig4.tiff", height =22.23 , width =19.05, units = "cm", compression = "lzw", res = 600)
+multiplot(gg, hh, cols=1)
+dev.off()
+```
+
+## Figure S1
 ```{r}
 gg<- ggplot(data=size100, aes(y=max_prevalence, x=as.factor(rec_rate)))
 #gg<- gg+ geom_bar(stat="identity", position=position_dodge(), colour="black")+ facet_grid(Rec.prob. ~ percep, scales= "free_x", labeller=label_both)
@@ -236,12 +284,12 @@ hh<- hh + ggtitle("(B)")
 #hh<-hh + geom_text(data = means , aes(label = duration, y = duration + 0.08))
 hh
 
-tiff("Fig4.tiff", height =22.23 , width =19.05, units = "cm", compression = "lzw", res = 600)
+tiff("S1Fig.tiff", height =22.23 , width =19.05, units = "cm", compression = "lzw", res = 600)
 multiplot(gg, hh, cols=1)
 dev.off()
 ```
 
-## Figure S1
+## Figure S2
 ```{r}
 gg<- ggplot(data=size50, aes(y=max_prevalence, x=as.factor(rec_rate)))
 #gg<- gg+ geom_bar(stat="identity", position=position_dodge(), colour="black")+ facet_grid(Rec.prob. ~ percep, scales= "free_x", labeller=label_both)
@@ -277,12 +325,55 @@ hh<- hh + ggtitle("(B)")
 #hh<-hh + geom_text(data = means , aes(label = duration, y = duration + 0.08))
 hh
 
-tiff("FigS1.tiff", height =22.23 , width =19.05, units = "cm", compression = "lzw", res = 600)
+tiff("FigS2.tiff", height =22.23 , width =19.05, units = "cm", compression = "lzw", res = 600)
 multiplot(gg, hh, cols=1)
 dev.off()
 ```
-
 ## Figure 5
+Heatmap duration for n.initial=150, dir_move=T, and recovery rate= 0.01
+
+```{r}
+sdf <- summaryBy(max_prevalence~ rec_rate+scent_load +pathogen_load +scent_decay + inf_decay +dir_move, data=sub_n150_dT_r0.01, FUN=mean)
+gg <- ggplot(sdf, aes(x=as.factor(pathogen_load), y=as.factor(scent_load), fill=max_prevalence.mean))
+gg <- gg + geom_tile(color="white", size=0.1)
+gg <- gg + scale_fill_viridis(name="Mean\nmaximum\nprevalence")
+gg <- gg + coord_equal()
+gg <- gg + facet_grid(scent_decay~ inf_decay, labeller = labeller(
+  scent_decay = c("0.01" = "Slow scent decay", "0.1"="Med. scent decay", "1"= "Fast scent decay"),
+  inf_decay = c("0.01" = "Slow pathogen decay", "0.1"="Med. pathogen decay", "1" = "Fast pathogen decay")
+))
+gg<- gg+ labs(x ="Initial pathogen load", y="Initial scent load")
+gg<- gg+ theme(axis.title = element_text(size=10))
+gg<- gg + theme(axis.text.x = element_text(angle=90, vjust=0.5, size=10))
+gg<- gg + theme(axis.text.y = element_text(vjust=0.5, size=10)) 
+gg<- gg + theme(strip.text = element_text(vjust=0.5, size=8)) 
+gg<- gg + theme(legend.text = element_text(vjust=0.5, size=10), legend.title=element_text(vjust=0.5, size=10))
+gg<- gg+ ggtitle("(A)")
+gg
+
+sdf <- summaryBy(duration~ rec_rate+scent_load +pathogen_load +scent_decay + inf_decay +dir_move, data=sub_n150_dT_r0.01, FUN=mean)
+hh <- ggplot(sdf, aes(x=as.factor(pathogen_load), y=as.factor(scent_load), fill=duration.mean))
+hh <- hh + geom_tile(color="white", size=0.1)
+hh <- hh + scale_fill_viridis(name="Mean\nduration")
+hh <- hh + coord_equal()
+hh <- hh + facet_grid(scent_decay~ inf_decay, labeller = labeller(
+  scent_decay = c("0.01" = "Slow scent decay", "0.1"="Med. scent decay", "1"= "Fast scent decay"),
+  inf_decay = c("0.01" = "Slow pathogen decay", "0.1"="Med. pathogen decay", "1" = "Fast pathogen decay")
+))
+hh<- hh+ labs(x ="Initial pathogen load", y="Initial scent load")
+hh<- hh+ theme(axis.title = element_text(size=10))
+hh<- hh + theme(axis.text.x = element_text(angle=90, vjust=0.5, size=10))
+hh<- hh + theme(axis.text.y = element_text(vjust=0.5, size=10)) 
+hh<- hh + theme(strip.text = element_text(vjust=0.5, size=8)) 
+hh<- hh + theme(legend.text = element_text(vjust=0.5, size=10), legend.title=element_text(vjust=0.5, size=10))
+hh<- hh + ggtitle("(B)")
+hh
+
+tiff("Fig5.tiff", height =22.23 , width =13, units = "cm", compression = "lzw", res = 600)
+multiplot(gg, hh, cols=1)
+dev.off()
+```
+## Figure S3
 Heatmap duration for n.initial=100, dir_move=T, and recovery rate= 0.01
 
 ```{r}
@@ -322,91 +413,7 @@ hh<- hh + theme(legend.text = element_text(vjust=0.5, size=10), legend.title=ele
 hh<- hh + ggtitle("(B)")
 hh
 
-tiff("Fig5.tiff", height =22.23 , width =13, units = "cm", compression = "lzw", res = 600)
-multiplot(gg, hh, cols=1)
-dev.off()
-```
-## S2 Fig 
-```{r}
-sdf <- summaryBy(max_prevalence~ rec_rate+scent_load +pathogen_load +scent_decay + inf_decay +dir_move, data=sub_n100_dT_r0.05, FUN=mean)
-gg <- ggplot(sdf, aes(x=as.factor(pathogen_load), y=as.factor(scent_load), fill=max_prevalence.mean))
-gg <- gg + geom_tile(color="white", size=0.1)
-gg <- gg + scale_fill_viridis(name="Mean\nmaximum\nprevalence")
-gg <- gg + coord_equal()
-gg <- gg + facet_grid(scent_decay~ inf_decay, labeller = labeller(
-  scent_decay = c("0.01" = "Slow scent decay", "0.1"="Med. scent decay", "1"= "Fast scent decay"),
-  inf_decay = c("0.01" = "Slow pathogen decay", "0.1"="Med. pathogen decay", "1" = "Fast pathogen decay")
-))
-gg<- gg+ labs(x ="Initial pathogen load", y="Initial scent load")
-gg<- gg+ theme(axis.title = element_text(size=10))
-gg<- gg + theme(axis.text.x = element_text(angle=90, vjust=0.5, size=10))
-gg<- gg + theme(axis.text.y = element_text(vjust=0.5, size=10)) 
-gg<- gg + theme(strip.text = element_text(vjust=0.5, size=8)) 
-gg<- gg + theme(legend.text = element_text(vjust=0.5, size=10), legend.title=element_text(vjust=0.5, size=10))
-gg<- gg+ ggtitle("(A)")
-gg
-
-sdf <- summaryBy(duration~ rec_rate+scent_load +pathogen_load +scent_decay + inf_decay +dir_move, data=sub_n100_dT_r0.05, FUN=mean)
-hh <- ggplot(sdf, aes(x=as.factor(pathogen_load), y=as.factor(scent_load), fill=duration.mean))
-hh <- hh + geom_tile(color="white", size=0.1)
-hh <- hh + scale_fill_viridis(name="Mean\nduration")
-hh <- hh + coord_equal()
-hh <- hh + facet_grid(scent_decay~ inf_decay, labeller = labeller(
-  scent_decay = c("0.01" = "Slow scent decay", "0.1"="Med. scent decay", "1"= "Fast scent decay"),
-  inf_decay = c("0.01" = "Slow pathogen decay", "0.1"="Med. pathogen decay", "1" = "Fast pathogen decay")
-))
-hh<- hh+ labs(x ="Initial pathogen load", y="Initial scent load")
-hh<- hh+ theme(axis.title = element_text(size=10))
-hh<- hh + theme(axis.text.x = element_text(angle=90, vjust=0.5, size=10))
-hh<- hh + theme(axis.text.y = element_text(vjust=0.5, size=10)) 
-hh<- hh + theme(strip.text = element_text(vjust=0.5, size=8)) 
-hh<- hh + theme(legend.text = element_text(vjust=0.5, size=10), legend.title=element_text(vjust=0.5, size=10))
-hh<- hh + ggtitle("(B)")
-hh
-
-tiff("S2Fig.tiff", height =22.23 , width =13, units = "cm", compression = "lzw", res = 600)
-multiplot(gg, hh, cols=1)
-dev.off()
-```
-## S3 Fig 
-```{r}
-sdf <- summaryBy(max_prevalence~ rec_rate+scent_load +pathogen_load +scent_decay + inf_decay +dir_move, data=sub_n100_dT_r0.1, FUN=mean)
-gg <- ggplot(sdf, aes(x=as.factor(pathogen_load), y=as.factor(scent_load), fill=max_prevalence.mean))
-gg <- gg + geom_tile(color="white", size=0.1)
-gg <- gg + scale_fill_viridis(name="Mean\nmaximum\nprevalence")
-gg <- gg + coord_equal()
-gg <- gg + facet_grid(scent_decay~ inf_decay, labeller = labeller(
-  scent_decay = c("0.01" = "Slow scent decay", "0.1"="Med. scent decay", "1"= "Fast scent decay"),
-  inf_decay = c("0.01" = "Slow pathogen decay", "0.1"="Med. pathogen decay", "1" = "Fast pathogen decay")
-))
-gg<- gg+ labs(x ="Initial pathogen load", y="Initial scent load")
-gg<- gg+ theme(axis.title = element_text(size=10))
-gg<- gg + theme(axis.text.x = element_text(angle=90, vjust=0.5, size=10))
-gg<- gg + theme(axis.text.y = element_text(vjust=0.5, size=10)) 
-gg<- gg + theme(strip.text = element_text(vjust=0.5, size=8)) 
-gg<- gg + theme(legend.text = element_text(vjust=0.5, size=10), legend.title=element_text(vjust=0.5, size=10))
-gg<- gg+ ggtitle("(A)")
-gg
-
-sdf <- summaryBy(duration~ rec_rate+scent_load +pathogen_load +scent_decay + inf_decay +dir_move, data=sub_n100_dT_r0.1, FUN=mean)
-hh <- ggplot(sdf, aes(x=as.factor(pathogen_load), y=as.factor(scent_load), fill=duration.mean))
-hh <- hh + geom_tile(color="white", size=0.1)
-hh <- hh + scale_fill_viridis(name="Mean\nduration")
-hh <- hh + coord_equal()
-hh <- hh + facet_grid(scent_decay~ inf_decay, labeller = labeller(
-  scent_decay = c("0.01" = "Slow scent decay", "0.1"="Med. scent decay", "1"= "Fast scent decay"),
-  inf_decay = c("0.01" = "Slow pathogen decay", "0.1"="Med. pathogen decay", "1" = "Fast pathogen decay")
-))
-hh<- hh+ labs(x ="Initial pathogen load", y="Initial scent load")
-hh<- hh+ theme(axis.title = element_text(size=10))
-hh<- hh + theme(axis.text.x = element_text(angle=90, vjust=0.5, size=10))
-hh<- hh + theme(axis.text.y = element_text(vjust=0.5, size=10)) 
-hh<- hh + theme(strip.text = element_text(vjust=0.5, size=8)) 
-hh<- hh + theme(legend.text = element_text(vjust=0.5, size=10), legend.title=element_text(vjust=0.5, size=10))
-hh<- hh + ggtitle("(B)")
-hh
-
-tiff("S3Fig.tiff", height =22.23 , width =13, units = "cm", compression = "lzw", res = 600)
+tiff("FigS3.tiff", height =22.23 , width =13, units = "cm", compression = "lzw", res = 600)
 multiplot(gg, hh, cols=1)
 dev.off()
 ```
@@ -456,7 +463,183 @@ tiff("S4Fig.tiff", height =22.23 , width =13, units = "cm", compression = "lzw",
 multiplot(gg, hh, cols=1)
 dev.off()
 ```
-## S5 Figure
+
+## Figure S5
+Heatmap duration for n.initial=150, dir_move=T, and recovery rate= 0.05
+
+```{r}
+sdf <- summaryBy(max_prevalence~ rec_rate+scent_load +pathogen_load +scent_decay + inf_decay +dir_move, data=sub_n150_dT_r0.05, FUN=mean)
+gg <- ggplot(sdf, aes(x=as.factor(pathogen_load), y=as.factor(scent_load), fill=max_prevalence.mean))
+gg <- gg + geom_tile(color="white", size=0.1)
+gg <- gg + scale_fill_viridis(name="Mean\nmaximum\nprevalence")
+gg <- gg + coord_equal()
+gg <- gg + facet_grid(scent_decay~ inf_decay, labeller = labeller(
+  scent_decay = c("0.01" = "Slow scent decay", "0.1"="Med. scent decay", "1"= "Fast scent decay"),
+  inf_decay = c("0.01" = "Slow pathogen decay", "0.1"="Med. pathogen decay", "1" = "Fast pathogen decay")
+))
+gg<- gg+ labs(x ="Initial pathogen load", y="Initial scent load")
+gg<- gg+ theme(axis.title = element_text(size=10))
+gg<- gg + theme(axis.text.x = element_text(angle=90, vjust=0.5, size=10))
+gg<- gg + theme(axis.text.y = element_text(vjust=0.5, size=10)) 
+gg<- gg + theme(strip.text = element_text(vjust=0.5, size=8)) 
+gg<- gg + theme(legend.text = element_text(vjust=0.5, size=10), legend.title=element_text(vjust=0.5, size=10))
+gg<- gg+ ggtitle("(A)")
+gg
+
+sdf <- summaryBy(duration~ rec_rate+scent_load +pathogen_load +scent_decay + inf_decay +dir_move, data=sub_n150_dT_r0.05, FUN=mean)
+hh <- ggplot(sdf, aes(x=as.factor(pathogen_load), y=as.factor(scent_load), fill=duration.mean))
+hh <- hh + geom_tile(color="white", size=0.1)
+hh <- hh + scale_fill_viridis(name="Mean\nduration")
+hh <- hh + coord_equal()
+hh <- hh + facet_grid(scent_decay~ inf_decay, labeller = labeller(
+  scent_decay = c("0.01" = "Slow scent decay", "0.1"="Med. scent decay", "1"= "Fast scent decay"),
+  inf_decay = c("0.01" = "Slow pathogen decay", "0.1"="Med. pathogen decay", "1" = "Fast pathogen decay")
+))
+hh<- hh+ labs(x ="Initial pathogen load", y="Initial scent load")
+hh<- hh+ theme(axis.title = element_text(size=10))
+hh<- hh + theme(axis.text.x = element_text(angle=90, vjust=0.5, size=10))
+hh<- hh + theme(axis.text.y = element_text(vjust=0.5, size=10)) 
+hh<- hh + theme(strip.text = element_text(vjust=0.5, size=8)) 
+hh<- hh + theme(legend.text = element_text(vjust=0.5, size=10), legend.title=element_text(vjust=0.5, size=10))
+hh<- hh + ggtitle("(B)")
+hh
+
+tiff("S5Fig.tiff", height =22.23 , width =13, units = "cm", compression = "lzw", res = 600)
+multiplot(gg, hh, cols=1)
+dev.off()
+```
+## S6 Fig 
+```{r}
+sdf <- summaryBy(max_prevalence~ rec_rate+scent_load +pathogen_load +scent_decay + inf_decay +dir_move, data=sub_n100_dT_r0.05, FUN=mean)
+gg <- ggplot(sdf, aes(x=as.factor(pathogen_load), y=as.factor(scent_load), fill=max_prevalence.mean))
+gg <- gg + geom_tile(color="white", size=0.1)
+gg <- gg + scale_fill_viridis(name="Mean\nmaximum\nprevalence")
+gg <- gg + coord_equal()
+gg <- gg + facet_grid(scent_decay~ inf_decay, labeller = labeller(
+  scent_decay = c("0.01" = "Slow scent decay", "0.1"="Med. scent decay", "1"= "Fast scent decay"),
+  inf_decay = c("0.01" = "Slow pathogen decay", "0.1"="Med. pathogen decay", "1" = "Fast pathogen decay")
+))
+gg<- gg+ labs(x ="Initial pathogen load", y="Initial scent load")
+gg<- gg+ theme(axis.title = element_text(size=10))
+gg<- gg + theme(axis.text.x = element_text(angle=90, vjust=0.5, size=10))
+gg<- gg + theme(axis.text.y = element_text(vjust=0.5, size=10)) 
+gg<- gg + theme(strip.text = element_text(vjust=0.5, size=8)) 
+gg<- gg + theme(legend.text = element_text(vjust=0.5, size=10), legend.title=element_text(vjust=0.5, size=10))
+gg<- gg+ ggtitle("(A)")
+gg
+
+sdf <- summaryBy(duration~ rec_rate+scent_load +pathogen_load +scent_decay + inf_decay +dir_move, data=sub_n100_dT_r0.05, FUN=mean)
+hh <- ggplot(sdf, aes(x=as.factor(pathogen_load), y=as.factor(scent_load), fill=duration.mean))
+hh <- hh + geom_tile(color="white", size=0.1)
+hh <- hh + scale_fill_viridis(name="Mean\nduration")
+hh <- hh + coord_equal()
+hh <- hh + facet_grid(scent_decay~ inf_decay, labeller = labeller(
+  scent_decay = c("0.01" = "Slow scent decay", "0.1"="Med. scent decay", "1"= "Fast scent decay"),
+  inf_decay = c("0.01" = "Slow pathogen decay", "0.1"="Med. pathogen decay", "1" = "Fast pathogen decay")
+))
+hh<- hh+ labs(x ="Initial pathogen load", y="Initial scent load")
+hh<- hh+ theme(axis.title = element_text(size=10))
+hh<- hh + theme(axis.text.x = element_text(angle=90, vjust=0.5, size=10))
+hh<- hh + theme(axis.text.y = element_text(vjust=0.5, size=10)) 
+hh<- hh + theme(strip.text = element_text(vjust=0.5, size=8)) 
+hh<- hh + theme(legend.text = element_text(vjust=0.5, size=10), legend.title=element_text(vjust=0.5, size=10))
+hh<- hh + ggtitle("(B)")
+hh
+
+tiff("S6Fig.tiff", height =22.23 , width =13, units = "cm", compression = "lzw", res = 600)
+multiplot(gg, hh, cols=1)
+dev.off()
+```
+
+## Figure S7
+Heatmap duration for n.initial=150, dir_move=T, and recovery rate= 0.10
+```{r}
+sdf <- summaryBy(max_prevalence~ rec_rate+scent_load +pathogen_load +scent_decay + inf_decay +dir_move, data=sub_n150_dT_r0.1, FUN=mean)
+gg <- ggplot(sdf, aes(x=as.factor(pathogen_load), y=as.factor(scent_load), fill=max_prevalence.mean))
+gg <- gg + geom_tile(color="white", size=0.1)
+gg <- gg + scale_fill_viridis(name="Mean\nmaximum\nprevalence")
+gg <- gg + coord_equal()
+gg <- gg + facet_grid(scent_decay~ inf_decay, labeller = labeller(
+  scent_decay = c("0.01" = "Slow scent decay", "0.1"="Med. scent decay", "1"= "Fast scent decay"),
+  inf_decay = c("0.01" = "Slow pathogen decay", "0.1"="Med. pathogen decay", "1" = "Fast pathogen decay")
+))
+gg<- gg+ labs(x ="Initial pathogen load", y="Initial scent load")
+gg<- gg+ theme(axis.title = element_text(size=10))
+gg<- gg + theme(axis.text.x = element_text(angle=90, vjust=0.5, size=10))
+gg<- gg + theme(axis.text.y = element_text(vjust=0.5, size=10)) 
+gg<- gg + theme(strip.text = element_text(vjust=0.5, size=8)) 
+gg<- gg + theme(legend.text = element_text(vjust=0.5, size=10), legend.title=element_text(vjust=0.5, size=10))
+gg<- gg+ ggtitle("(A)")
+gg
+
+sdf <- summaryBy(duration~ rec_rate+scent_load +pathogen_load +scent_decay + inf_decay +dir_move, data=sub_n150_dT_r0.1, FUN=mean)
+hh <- ggplot(sdf, aes(x=as.factor(pathogen_load), y=as.factor(scent_load), fill=duration.mean))
+hh <- hh + geom_tile(color="white", size=0.1)
+hh <- hh + scale_fill_viridis(name="Mean\nduration")
+hh <- hh + coord_equal()
+hh <- hh + facet_grid(scent_decay~ inf_decay, labeller = labeller(
+  scent_decay = c("0.01" = "Slow scent decay", "0.1"="Med. scent decay", "1"= "Fast scent decay"),
+  inf_decay = c("0.01" = "Slow pathogen decay", "0.1"="Med. pathogen decay", "1" = "Fast pathogen decay")
+))
+hh<- hh+ labs(x ="Initial pathogen load", y="Initial scent load")
+hh<- hh+ theme(axis.title = element_text(size=10))
+hh<- hh + theme(axis.text.x = element_text(angle=90, vjust=0.5, size=10))
+hh<- hh + theme(axis.text.y = element_text(vjust=0.5, size=10)) 
+hh<- hh + theme(strip.text = element_text(vjust=0.5, size=8)) 
+hh<- hh + theme(legend.text = element_text(vjust=0.5, size=10), legend.title=element_text(vjust=0.5, size=10))
+hh<- hh + ggtitle("(B)")
+hh
+
+tiff("S7Fig.tiff", height =22.23 , width =13, units = "cm", compression = "lzw", res = 600)
+multiplot(gg, hh, cols=1)
+dev.off()
+```
+
+
+## S8 Fig 
+```{r}
+sdf <- summaryBy(max_prevalence~ rec_rate+scent_load +pathogen_load +scent_decay + inf_decay +dir_move, data=sub_n100_dT_r0.1, FUN=mean)
+gg <- ggplot(sdf, aes(x=as.factor(pathogen_load), y=as.factor(scent_load), fill=max_prevalence.mean))
+gg <- gg + geom_tile(color="white", size=0.1)
+gg <- gg + scale_fill_viridis(name="Mean\nmaximum\nprevalence")
+gg <- gg + coord_equal()
+gg <- gg + facet_grid(scent_decay~ inf_decay, labeller = labeller(
+  scent_decay = c("0.01" = "Slow scent decay", "0.1"="Med. scent decay", "1"= "Fast scent decay"),
+  inf_decay = c("0.01" = "Slow pathogen decay", "0.1"="Med. pathogen decay", "1" = "Fast pathogen decay")
+))
+gg<- gg+ labs(x ="Initial pathogen load", y="Initial scent load")
+gg<- gg+ theme(axis.title = element_text(size=10))
+gg<- gg + theme(axis.text.x = element_text(angle=90, vjust=0.5, size=10))
+gg<- gg + theme(axis.text.y = element_text(vjust=0.5, size=10)) 
+gg<- gg + theme(strip.text = element_text(vjust=0.5, size=8)) 
+gg<- gg + theme(legend.text = element_text(vjust=0.5, size=10), legend.title=element_text(vjust=0.5, size=10))
+gg<- gg+ ggtitle("(A)")
+gg
+
+sdf <- summaryBy(duration~ rec_rate+scent_load +pathogen_load +scent_decay + inf_decay +dir_move, data=sub_n100_dT_r0.1, FUN=mean)
+hh <- ggplot(sdf, aes(x=as.factor(pathogen_load), y=as.factor(scent_load), fill=duration.mean))
+hh <- hh + geom_tile(color="white", size=0.1)
+hh <- hh + scale_fill_viridis(name="Mean\nduration")
+hh <- hh + coord_equal()
+hh <- hh + facet_grid(scent_decay~ inf_decay, labeller = labeller(
+  scent_decay = c("0.01" = "Slow scent decay", "0.1"="Med. scent decay", "1"= "Fast scent decay"),
+  inf_decay = c("0.01" = "Slow pathogen decay", "0.1"="Med. pathogen decay", "1" = "Fast pathogen decay")
+))
+hh<- hh+ labs(x ="Initial pathogen load", y="Initial scent load")
+hh<- hh+ theme(axis.title = element_text(size=10))
+hh<- hh + theme(axis.text.x = element_text(angle=90, vjust=0.5, size=10))
+hh<- hh + theme(axis.text.y = element_text(vjust=0.5, size=10)) 
+hh<- hh + theme(strip.text = element_text(vjust=0.5, size=8)) 
+hh<- hh + theme(legend.text = element_text(vjust=0.5, size=10), legend.title=element_text(vjust=0.5, size=10))
+hh<- hh + ggtitle("(B)")
+hh
+
+tiff("S8Fig.tiff", height =22.23 , width =13, units = "cm", compression = "lzw", res = 600)
+multiplot(gg, hh, cols=1)
+dev.off()
+```
+
+## S9 Figure
 ```{r}
 sdf <- summaryBy(max_prevalence~ rec_rate+scent_load +pathogen_load +scent_decay + inf_decay +dir_move, data=sub_n50_dT_r0.05, FUN=mean)
 gg <- ggplot(sdf, aes(x=as.factor(pathogen_load), y=as.factor(scent_load), fill=max_prevalence.mean))
@@ -494,11 +677,11 @@ hh<- hh + theme(legend.text = element_text(vjust=0.5, size=10), legend.title=ele
 hh<- hh + ggtitle("(B)")
 hh
 
-tiff("S5Fig.tiff", height =22.23 , width =13, units = "cm", compression = "lzw", res = 600)
+tiff("S9Fig.tiff", height =22.23 , width =13, units = "cm", compression = "lzw", res = 600)
 multiplot(gg, hh, cols=1)
 dev.off()
 ```
-## S6 Figure
+## S10 Figure
 ```{r}
 sdf <- summaryBy(max_prevalence~ rec_rate+scent_load +pathogen_load +scent_decay + inf_decay +dir_move, data=sub_n50_dT_r0.1, FUN=mean)
 gg <- ggplot(sdf, aes(x=as.factor(pathogen_load), y=as.factor(scent_load), fill=max_prevalence.mean))
@@ -536,13 +719,57 @@ hh<- hh + theme(legend.text = element_text(vjust=0.5, size=10), legend.title=ele
 hh<- hh + ggtitle("(B)")
 hh
 
-tiff("S6Fig.tiff", height =22.23 , width =13, units = "cm", compression = "lzw", res = 600)
+tiff("S10Fig.tiff", height =22.23 , width =13, units = "cm", compression = "lzw", res = 600)
 multiplot(gg, hh, cols=1)
 dev.off()
 ```
 
 
+
 ## Figure 6
+```{r}
+ii<- ggplot(data=sub_n150_dT_r0.01, aes(x=as.factor(inf_decay), y=max_prevalence, fill=as.factor(scent_decay)))
+# ii<- ii+ geom_boxplot() #+ geom_jitter(alpha=0.5)
+# ii<- ii+ stat_summary(fun.y=mean, geom="point", col="blue")
+ii <- ii+ geom_boxplot() + facet_grid(scent_load~ pathogen_load, labeller = labeller(
+  scent_load = c("0.5" = "Low SL", "1"= "Med SL", "10"= "High SL"),
+  pathogen_load = c("0.5" = "Low PL","1" = "Med PL", "10" = "High PL")))
+ii<- ii+ labs(x = " ", y = "Maximum prevalence", fill= "Scent\ndecay rate")
+ii<- ii+ theme(plot.title = element_text(size=12))
+ii<- ii+ theme(axis.title = element_text(size=11))
+ii<- ii + theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=0, size=10))
+ii<- ii + theme(axis.text.y = element_text(vjust=0.5, size=10)) 
+ii<- ii + theme(strip.text = element_text(vjust=0.5, size=11)) 
+ii<- ii + theme(legend.text = element_text(vjust=0.5, size=11), legend.title=element_text(vjust=0.5, size=11))
+ii<- ii + geom_vline(xintercept=c(6.5,12.5), linetype="dashed")
+ii<- ii + theme(plot.margin=unit(c(0.1,0.1,0,0.1), "cm"))
+ii
+
+jj<- ggplot(data=sub_n150_dT_r0.01, aes(x=as.factor(inf_decay), y=duration, fill=as.factor(scent_decay)))
+# jj<- jj+ geom_boxplot() #+ geom_jitter(alpha=0.5)
+# jj<- jj+ stat_summary(fun.y=mean, geom="point", col="blue")
+jj <- jj+ geom_boxplot() + facet_grid(scent_load~ pathogen_load, labeller = labeller(
+  scent_load = c("0.5" = "Low SL", "1"= "Med SL", "10"= "High SL"),
+  pathogen_load = c("0.5" = "Low PL","1" = "Med PL", "10" = "High PL")))
+jj<- jj+ labs(x = "Infection decay rate", y = "Duration", fill= "Scent\ndecay rate")
+jj<- jj+ theme(plot.title = element_text(size=12))
+jj<- jj+ theme(axis.title = element_text(size=11))
+jj<- jj + theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=0, size=10))
+jj<- jj + theme(axis.text.y = element_text(vjust=0.5, size=10)) 
+jj<- jj + theme(strip.text = element_text(vjust=0.5, size=11)) 
+jj<- jj + theme(legend.text = element_text(vjust=0.5, size=11), legend.title=element_text(vjust=0.5, size=11))
+jj<- jj + geom_vline(xintercept=c(6.5,12.5), linetype="dashed")
+jj<- jj + theme(plot.margin=unit(c(0.1,0.1,0,0.1), "cm"))
+jj
+
+tiff("Fig6.tiff", height =22.23 , width =19.05, units = "cm", compression = "lzw", res = 600)
+multiplot(ii, jj, cols=1)
+dev.off()
+
+```
+
+
+## Figure S11
 ```{r}
 ii<- ggplot(data=sub_n100_dT_r0.01, aes(x=as.factor(inf_decay), y=max_prevalence, fill=as.factor(scent_decay)))
 # ii<- ii+ geom_boxplot() #+ geom_jitter(alpha=0.5)
@@ -578,9 +805,51 @@ jj<- jj + geom_vline(xintercept=c(6.5,12.5), linetype="dashed")
 jj<- jj + theme(plot.margin=unit(c(0.1,0.1,0,0.1), "cm"))
 jj
 
-tiff("Fig6.tiff", height =22.23 , width =19.05, units = "cm", compression = "lzw", res = 600)
+tiff("S11Fig.tiff", height =22.23 , width =19.05, units = "cm", compression = "lzw", res = 600)
 multiplot(ii, jj, cols=1)
 dev.off()
 
 ```
 
+
+## Figure S12
+```{r}
+ii<- ggplot(data=sub_n50_dT_r0.01, aes(x=as.factor(inf_decay), y=max_prevalence, fill=as.factor(scent_decay)))
+# ii<- ii+ geom_boxplot() #+ geom_jitter(alpha=0.5)
+# ii<- ii+ stat_summary(fun.y=mean, geom="point", col="blue")
+ii <- ii+ geom_boxplot() + facet_grid(scent_load~ pathogen_load, labeller = labeller(
+  scent_load = c("0.5" = "Low SL", "1"= "Med SL", "10"= "High SL"),
+  pathogen_load = c("0.5" = "Low PL","1" = "Med PL", "10" = "High PL")))
+ii<- ii+ labs(x = " ", y = "Maximum prevalence", fill= "Scent\ndecay rate")
+ii<- ii+ theme(plot.title = element_text(size=12))
+ii<- ii+ theme(axis.title = element_text(size=11))
+ii<- ii + theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=0, size=10))
+ii<- ii + theme(axis.text.y = element_text(vjust=0.5, size=10)) 
+ii<- ii + theme(strip.text = element_text(vjust=0.5, size=11)) 
+ii<- ii + theme(legend.text = element_text(vjust=0.5, size=11), legend.title=element_text(vjust=0.5, size=11))
+ii<- ii + geom_vline(xintercept=c(6.5,12.5), linetype="dashed")
+ii<- ii + theme(plot.margin=unit(c(0.1,0.1,0,0.1), "cm"))
+ii
+
+jj<- ggplot(data=sub_n50_dT_r0.01, aes(x=as.factor(inf_decay), y=duration, fill=as.factor(scent_decay)))
+# jj<- jj+ geom_boxplot() #+ geom_jitter(alpha=0.5)
+# jj<- jj+ stat_summary(fun.y=mean, geom="point", col="blue")
+jj <- jj+ geom_boxplot() + facet_grid(scent_load~ pathogen_load, labeller = labeller(
+  scent_load = c("0.5" = "Low SL", "1"= "Med SL", "10"= "High SL"),
+  pathogen_load = c("0.5" = "Low PL","1" = "Med PL", "10" = "High PL")))
+jj<- jj+ labs(x = "Infection decay rate", y = "Duration", fill= "Scent\ndecay rate")
+jj<- jj+ theme(plot.title = element_text(size=12))
+jj<- jj+ theme(axis.title = element_text(size=11))
+jj<- jj + theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=0, size=10))
+jj<- jj + theme(axis.text.y = element_text(vjust=0.5, size=10)) 
+jj<- jj + theme(strip.text = element_text(vjust=0.5, size=11)) 
+jj<- jj + theme(legend.text = element_text(vjust=0.5, size=11), legend.title=element_text(vjust=0.5, size=11))
+jj<- jj + geom_vline(xintercept=c(6.5,12.5), linetype="dashed")
+jj<- jj + theme(plot.margin=unit(c(0.1,0.1,0,0.1), "cm"))
+jj
+
+tiff("S12Fig.tiff", height =22.23 , width =19.05, units = "cm", compression = "lzw", res = 600)
+multiplot(ii, jj, cols=1)
+dev.off()
+
+```
