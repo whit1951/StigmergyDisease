@@ -52,3 +52,22 @@ sjob1 <- slurm_apply(StigLoop, params, jobname = 'stig_sim_2019_07_18',
 # print_job_status(sjob)
 # cancel_slurm(sjob)
 
+#specify parameters to run
+maxT<-5000
+nsim<-100
+lsize<-50 
+n.initial<-150
+rec_rate<-c(0.10, 0.05, 0.01)
+scent_load<- c(0.5, 1, 10) 
+pathogen_load<-c(0.5, 1, 10) 
+scent_decay<-c(0.01, 0.1, 1)
+inf_decay<-c(0.01, 0.1, 1)
+dir_move<-c(TRUE, FALSE)
+
+params<-expand.grid(maxT=maxT, nsim=nsim, lsize=lsize, n.initial=n.initial, rec_rate=rec_rate, scent_load=scent_load, pathogen_load=pathogen_load, scent_decay=scent_decay, inf_decay=inf_decay, dir_move=dir_move)
+
+sopt <- list(time = '192:00:00', share = TRUE, "mail-user"= "lwhite@sesync.org", "mail-type"="ALL", partition="sesync")
+# 
+sjob2 <- slurm_apply(StigLoop, params, jobname = 'stig_sim_2019_09_20',
+                     nodes = 24, cpus_per_node = 8, submit = TRUE, add_objects=add_objects, slurm_options=sopt)
+
