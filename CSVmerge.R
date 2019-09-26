@@ -9,29 +9,28 @@ library(ggthemes)
 library(scales)
 library(lsr)
 
-##Read in file names from directory
-filenames <- list.files(path = "~/StigmergyDisease/_rslurm_stig_sim_2019_07_18")
+##Read in file names from directory--> n.initial=150
+filenames <- list.files(path = "~/StigmergyDisease/_rslurm_stig_sim_2019_09_20")
 summaries<-filenames[grep("summary", filenames)] #summary data
 infecteds<-filenames[grep("infected", filenames)] #I data
-
 
 ##Check complete list
 #specify parameters to run
 maxT<-5000
 nsim<-100
 lsize<-50 
-n.initial<-c(50, 100)
-inf_prob<-c(0.10, 0.25, 0.50)
+n.initial<-c(150)
 rec_rate<-c(0.10, 0.05, 0.01)
-dur_scent<- c(1,10) 
-initial_load<-c(1,10) 
-scent_decay<-c(0.1, 0.5)
-inf_decay<-c(0.1, 0.5)
+scent_load<- c(0.5, 1, 10) 
+pathogen_load<-c(0.5, 1, 10) 
+scent_decay<-c(0.01, 0.1, 1)
+inf_decay<-c(0.01, 0.1, 1)
+dir_move<-c(TRUE, FALSE)
 
 complete_list<-vector(mode="character")
-params<-expand.grid(maxT=maxT, nsim=nsim, lsize=lsize, n.initial=n.initial, inf_prob=inf_prob, rec_rate=rec_rate, dur_scent=dur_scent, initial_load=initial_load, scent_decay=scent_decay, inf_decay=inf_decay)
+params<-expand.grid(maxT=maxT, nsim=nsim, lsize=lsize, n.initial=n.initial, rec_rate=rec_rate, scent_load=scent_load, pathogen_load=pathogen_load, scent_decay=scent_decay, inf_decay=inf_decay, dir_move=dir_move)
 for(i in 1:nrow(params)){
-complete_list[i]<-paste("lsize", params$lsize[i], "n.initial", params$n.initial[i], "inf", params$inf_prob[i], "rec", params$rec_rate[i],"dur_scent", params$dur_scent[i],"initial_load",params$initial_load[i], "scent_decay", params$scent_decay[i], "inf_decay", params$inf_decay[i], "_summary.csv", sep="")
+complete_list[i]<-paste("lsize", params$lsize[i], "n.initial", params$n.initial[i], "rec", params$rec_rate[i],"scent_load", params$scent_load[i],"pathogen_load",params$pathogen_load[i], "scent_decay", params$scent_decay[i], "inf_decay", params$inf_decay[i], "dir_move", params$dir_move[i], "_summary.csv", sep="")
 }
 
 miss_sim<-logical(length(complete_list))
@@ -42,15 +41,24 @@ if(complete_list[i] %in% summaries)
 which(miss_sim==FALSE)  
 
 ##Make a merged dataset from all available .csv files
+setwd("~/StigmergyDisease/_rslurm_stig_sim_2019_09_20")
+filenames <- list.files(path = "~/StigmergyDisease/_rslurm_stig_sim_2019_09_20")
+summaries<-filenames[grep("summary", filenames)] #summary data
+infecteds<-filenames[grep("infected", filenames)] #I data
+merged_data150<- do.call("rbind", lapply(summaries, read.csv, header = TRUE))
+merged_data150$X<-NULL
+
+##Read in file names from directory--> n.initial=50 & 100
 setwd("~/StigmergyDisease/_rslurm_stig_sim_2019_07_18")
+filenames <- list.files(path = "~/StigmergyDisease/_rslurm_stig_sim_2019_07_18")
+summaries<-filenames[grep("summary", filenames)] #summary data
+infecteds<-filenames[grep("infected", filenames)] #I data
+
 merged_data<- do.call("rbind", lapply(summaries, read.csv, header = TRUE))
 merged_data$X<-NULL
-# merged_data$inf_prob[which(merged_data$inf_prob==0.1)]<-0.10 #Same number of precision points
-#merged_data$betas <- paste(merged_data$beta1,merged_data$beta2)
-#merged_data$betas <- ordered(merged_data$betas, levels = c("0 -6", "0 -3", "0 0", "3 -6", "3 -3", "3 0", "6 -6", "6 -3", "6 0"))
-#merged_data$pbyH <- paste(merged_data$p,merged_data$H) #, sep=',')
 merged_data[which(is.na(merged_data$duration)),]
-# merged_data$duration[which(is.na(merged_data$duration))]<-1000
+
+merged_data<-rbind(merged_data, merged_data150)
 
 #Create character strings for landscape structure (Hurst exponent and proportion available habitat)
 merged_data$PL<-NA #pathogen load
@@ -75,6 +83,7 @@ merged_data<-read.csv("stig_summary.csv")
 ##Make some sub data sets by density and recovery rate
 size50<-merged_data[which(merged_data$n.initial==50),]
 size100<-merged_data[which(merged_data$n.initial==100),]
+size150<-merged_data[which(merged_data$n.initial==150),]
 
 sub_dT_r0.01<-merged_data[which(merged_data$dir_move==TRUE & merged_data$rec_rate==0.01),]
 sub_dT_r0.05<-merged_data[which(merged_data$dir_move==TRUE & merged_data$rec_rate==0.05),]
@@ -87,6 +96,10 @@ sub_n50_dT_r0.1<-merged_data[which(merged_data$dir_move==TRUE & merged_data$rec_
 sub_n100_dT_r0.01<-merged_data[which(merged_data$dir_move==TRUE & merged_data$rec_rate==0.01 & merged_data$n.initial==100),]
 sub_n100_dT_r0.05<-merged_data[which(merged_data$dir_move==TRUE & merged_data$rec_rate==0.05 & merged_data$n.initial==100),]
 sub_n100_dT_r0.1<-merged_data[which(merged_data$dir_move==TRUE & merged_data$rec_rate==0.1 & merged_data$n.initial==100),]
+
+sub_n150_dT_r0.01<-merged_data[which(merged_data$dir_move==TRUE & merged_data$rec_rate==0.01 & merged_data$n.initial==150),]
+sub_n150_dT_r0.05<-merged_data[which(merged_data$dir_move==TRUE & merged_data$rec_rate==0.05 & merged_data$n.initial==150),]
+sub_n150_dT_r0.1<-merged_data[which(merged_data$dir_move==TRUE & merged_data$rec_rate==0.1 & merged_data$n.initial==150),]
 
 
 # HEATMAPS ----------------------------------------------------------------
@@ -127,6 +140,24 @@ gg<- gg + theme(strip.text = element_text(vjust=0.5, size=8))
 gg<- gg + theme(legend.text = element_text(vjust=0.5, size=16), legend.title=element_text(vjust=0.5, size=20))
 gg
 
+##Heatmap of max_prevelance for n.initial=150 (Decay rates)
+sdf <- summaryBy(max_I~rec_rate+dur_scent +initial_load +scent_decay + inf_decay +dir_move, data=size150, FUN=mean)
+gg <- ggplot(sdf, aes(x=as.factor(dir_move), y=as.factor(rec_rate), fill=max_I.mean))
+gg <- gg + geom_tile(color="white", size=0.1)
+gg <- gg + scale_fill_viridis(name="Maximum number of \n infected individuals")
+gg <- gg + coord_equal()
+gg <- gg + facet_grid(scent_decay~ inf_decay, labeller = labeller(
+  scent_decay = c("0.01" = "Slow scent decay", "0.1"="Med. scent decay", "1"= "Fast scent decay"),
+  inf_decay = c("0.01" = "Slow pathogen decay", "0.1"="Med. pathogen decay", "1" = "Fast pathogen decay")
+))
+gg<- gg+ labs(x ="Directed movement", y="Recovery rate")
+gg<- gg+theme(legend.position="bottom")
+gg<- gg + theme(axis.text.x = element_text(angle=90, vjust=0.5, size=16))
+gg<- gg + theme(axis.text.y = element_text(vjust=0.5, size=16)) 
+gg<- gg + theme(strip.text = element_text(vjust=0.5, size=8)) 
+gg<- gg + theme(legend.text = element_text(vjust=0.5, size=16), legend.title=element_text(vjust=0.5, size=20))
+gg
+
 ##Heatmap duration for n.initial=50 (Decay rates)
 sdf <- summaryBy(duration~rec_rate+dur_scent +initial_load +scent_decay + inf_decay + dir_move, data=size50, FUN=mean)
 gg <- ggplot(sdf, aes(x=as.factor(dir_move), y=as.factor(rec_rate), fill=duration.mean))
@@ -148,6 +179,24 @@ gg
 
 ##Heatmap duration for n.initial=100 (Decay rates)
 sdf <- summaryBy(duration~rec_rate+dur_scent +initial_load +scent_decay + inf_decay + dir_move, data=size100, FUN=mean)
+gg <- ggplot(sdf, aes(x=as.factor(dir_move), y=as.factor(rec_rate), fill=duration.mean))
+gg <- gg + geom_tile(color="white", size=0.1)
+gg <- gg + scale_fill_viridis(name="Duration")
+gg <- gg + coord_equal()
+gg <- gg + facet_grid(scent_decay~ inf_decay, labeller = labeller(
+  scent_decay = c("0.01" = "Slow scent decay", "0.1"="Med. scent decay", "1"= "Fast scent decay"),
+  inf_decay = c("0.01" = "Slow pathogen decay", "0.1"="Med. pathogen decay", "1" = "Fast pathogen decay")
+))
+gg<- gg+ labs(x ="Directed movement", y="Recovery rate")
+gg<- gg+theme(legend.position="bottom")
+gg<- gg + theme(axis.text.x = element_text(angle=90, vjust=0.5, size=16))
+gg<- gg + theme(axis.text.y = element_text(vjust=0.5, size=16)) 
+gg<- gg + theme(strip.text = element_text(vjust=0.5, size=16)) 
+gg<- gg + theme(legend.text = element_text(vjust=0.5, size=16), legend.title=element_text(vjust=0.5, size=20))
+gg
+
+##Heatmap duration for n.initial=150 (Decay rates)
+sdf <- summaryBy(duration~rec_rate+dur_scent +initial_load +scent_decay + inf_decay + dir_move, data=size150, FUN=mean)
 gg <- ggplot(sdf, aes(x=as.factor(dir_move), y=as.factor(rec_rate), fill=duration.mean))
 gg <- gg + geom_tile(color="white", size=0.1)
 gg <- gg + scale_fill_viridis(name="Duration")
@@ -199,6 +248,23 @@ gg<- gg + theme(strip.text = element_text(vjust=0.5, size=16))
 gg<- gg + theme(legend.text = element_text(vjust=0.5, size=16), legend.title=element_text(vjust=0.5, size=20))
 gg
 
+##Heatmap of max_prevelance for n.initial=150 (Initial deposits)
+sdf <- summaryBy(max_I~rec_rate+scent_load +pathogen_load +scent_decay + inf_decay +dir_move, data=size150, FUN=mean)
+gg <- ggplot(sdf, aes(x=as.factor(dir_move), y=as.factor(rec_rate), fill=max_I.mean))
+gg <- gg + geom_tile(color="white", size=0.1)
+gg <- gg + scale_fill_viridis(name="Maximum number of \n infected individuals")
+gg <- gg + coord_equal()
+gg <- gg + facet_grid(pathogen_load~scent_load, labeller = labeller(
+  initial_load = c("0.5" = "Low pathogen load", "1"= "Med. pathogen load", "10"="High pathogen load"),
+  dur_scent = c("0.5" = "Low scent load", "1" = "Med. scent load", "10" = "High scent load")
+))
+gg<- gg+ labs(x ="Directed movement", y="Recovery rate")
+gg<- gg + theme(axis.text.x = element_text(angle=90, vjust=0.5, size=16))
+gg<- gg + theme(axis.text.y = element_text(vjust=0.5, size=16)) 
+gg<- gg + theme(strip.text = element_text(vjust=0.5, size=16)) 
+gg<- gg + theme(legend.text = element_text(vjust=0.5, size=16), legend.title=element_text(vjust=0.5, size=20))
+gg
+
 
 ##Heatmap duration for n.initial=50 (Initial deposits)
 sdf <- summaryBy(duration~rec_rate+scent_load +pathogen_load +scent_decay + inf_decay +dir_move, data=size50, FUN=mean)
@@ -233,6 +299,24 @@ gg<- gg + theme(axis.text.y = element_text(vjust=0.5, size=16))
 gg<- gg + theme(strip.text = element_text(vjust=0.5, size=16)) 
 gg<- gg + theme(legend.text = element_text(vjust=0.5, size=16), legend.title=element_text(vjust=0.5, size=20))
 gg
+
+##Heatmap duration for n.initial=150 (Initial deposits)
+sdf <- summaryBy(duration~rec_rate+scent_load +pathogen_load +scent_decay + inf_decay +dir_move, data=size150, FUN=mean)
+gg <- ggplot(sdf, aes(x=as.factor(dir_move), y=as.factor(rec_rate), fill=duration.mean))
+gg <- gg + geom_tile(color="white", size=0.1)
+gg <- gg + scale_fill_viridis(name="Duration")
+gg <- gg + coord_equal()
+gg <- gg + facet_grid(pathogen_load~scent_load, labeller = labeller(
+  initial_load = c("0.5" = "Low pathogen load", "1"= "Med. pathogen load", "10"="High pathogen load"),
+  dur_scent = c("0.5" = "Low scent load", "1" = "Med. scent load", "10" = "High scent load")
+))
+gg<- gg+ labs(x ="Directed movement", y="Recovery rate")
+gg<- gg + theme(axis.text.x = element_text(angle=90, vjust=0.5, size=16))
+gg<- gg + theme(axis.text.y = element_text(vjust=0.5, size=16)) 
+gg<- gg + theme(strip.text = element_text(vjust=0.5, size=16)) 
+gg<- gg + theme(legend.text = element_text(vjust=0.5, size=16), legend.title=element_text(vjust=0.5, size=20))
+gg
+
 
 ##Heatmap duration for n.initial=100, dir_move=T and recovery rate= 0.01
 sdf <- summaryBy(duration~ rec_rate+scent_load +pathogen_load +scent_decay + inf_decay +dir_move, data=sub_n100_dT_r0.01, FUN=mean)
@@ -269,6 +353,42 @@ gg<- gg + theme(strip.text = element_text(vjust=0.5, size=14))
 gg<- gg + theme(legend.text = element_text(vjust=0.5, size=16), legend.title=element_text(vjust=0.5, size=20))
 gg
 
+##Heatmap duration for n.initial=150, dir_move=T and recovery rate= 0.01
+sdf <- summaryBy(duration~ rec_rate+scent_load +pathogen_load +scent_decay + inf_decay +dir_move, data=sub_n150_dT_r0.01, FUN=mean)
+gg <- ggplot(sdf, aes(x=as.factor(pathogen_load), y=as.factor(scent_load), fill=duration.mean))
+gg <- gg + geom_tile(color="white", size=0.1)
+gg <- gg + scale_fill_viridis(name="Mean\nDuration")
+gg <- gg + coord_equal()
+gg <- gg + facet_grid(scent_decay~ inf_decay, labeller = labeller(
+  scent_decay = c("0.01" = "Slow scent decay", "0.1"="Med. scent decay", "1"= "Fast scent decay"),
+  inf_decay = c("0.01" = "Slow pathogen decay", "0.1"="Med. pathogen decay", "1" = "Fast pathogen decay")
+))
+gg<- gg+ labs(x ="Initial Pathogen Load", y="Initial Scent Load")
+gg<- gg+ theme(axis.title = element_text(face="bold", size=20))
+gg<- gg + theme(axis.text.x = element_text(angle=90, vjust=0.5, size=16))
+gg<- gg + theme(axis.text.y = element_text(vjust=0.5, size=16)) 
+gg<- gg + theme(strip.text = element_text(vjust=0.5, size=12)) 
+gg<- gg + theme(legend.text = element_text(vjust=0.5, size=16), legend.title=element_text(vjust=0.5, size=20))
+gg
+
+sdf <- summaryBy(max_prevalence~ rec_rate+scent_load +pathogen_load +scent_decay + inf_decay +dir_move, data=sub_n150_dT_r0.01, FUN=mean)
+gg <- ggplot(sdf, aes(x=as.factor(pathogen_load), y=as.factor(scent_load), fill=max_prevalence.mean))
+gg <- gg + geom_tile(color="white", size=0.1)
+gg <- gg + scale_fill_viridis(name="Mean\nMaximum\nPrevalence")
+gg <- gg + coord_equal()
+gg <- gg + facet_grid(scent_decay~ inf_decay, labeller = labeller(
+  scent_decay = c("0.01" = "Slow scent decay", "0.1"="Med. scent decay", "1"= "Fast scent decay"),
+  inf_decay = c("0.01" = "Slow pathogen decay", "0.1"="Med. pathogen decay", "1" = "Fast pathogen decay")
+))
+gg<- gg+ labs(x ="Initial Pathogen Load", y="Initial Scent Load")
+gg<- gg+ theme(axis.title = element_text(face="bold", size=20))
+gg<- gg + theme(axis.text.x = element_text(angle=90, vjust=0.5, size=16))
+gg<- gg + theme(axis.text.y = element_text(vjust=0.5, size=16)) 
+gg<- gg + theme(strip.text = element_text(vjust=0.5, size=14)) 
+gg<- gg + theme(legend.text = element_text(vjust=0.5, size=16), legend.title=element_text(vjust=0.5, size=20))
+gg
+
+
 # BOX PLOTS ---------------------------------------------------------------
 
 sub_data<-merged_data[which(merged_data$max_I>1),] #successful outbreaks
@@ -277,7 +397,7 @@ sub_data<-merged_data[which(merged_data$max_I>1),] #successful outbreaks
 #means <- aggregate(max_prevalence ~ density+ rec_rate +percep, sub_data, mean)
 #means_dur <- aggregate(duration ~ density+ rec_rate +percep, sub_data, mean)
 #tiff("boxplot_prev.tiff", height = 8, width = 12, units = "in", compression = "lzw", res = 300)
-gg<- ggplot(data=size100, aes(y=max_prevalence, x=as.factor(rec_rate)))
+gg<- ggplot(data=size150, aes(y=max_prevalence, x=as.factor(rec_rate)))
 #gg<- gg+ geom_bar(stat="identity", position=position_dodge(), colour="black")+ facet_grid(Rec.prob. ~ percep, scales= "free_x", labeller=label_both)
 gg<-gg+ geom_boxplot()+ facet_grid(  inf_decay~dir_move, scales= "free_x", labeller= labeller(
   dir_move = c("FALSE" = "Random", "TRUE"="Stigmergy"),
@@ -293,7 +413,7 @@ gg<- gg + theme(plot.margin=unit(c(0.1,0.1,0,0.1), "cm"))
 #gg<-gg + geom_text(data = means , aes(label = duration, y = duration + 0.08))
 gg
 
-gg<- ggplot(data=size100, aes(y=duration, x=as.factor(rec_rate)))
+gg<- ggplot(data=size150, aes(y=duration, x=as.factor(rec_rate)))
 #gg<- gg+ geom_bar(stat="identity", position=position_dodge(), colour="black")+ facet_grid(Rec.prob. ~ percep, scales= "free_x", labeller=label_both)
 gg<-gg+ geom_boxplot()+ facet_grid(  inf_decay~dir_move, scales= "free_x", labeller= labeller(
   dir_move = c("FALSE" = "Random", "TRUE"="Stigmergy"),
@@ -311,7 +431,7 @@ gg
 
 
 
-ii<- ggplot(data=sub_n100_dT_r0.01, aes(x=as.factor(scent_load), y=max_prevalence, fill=as.factor(pathogen_load)))
+ii<- ggplot(data=sub_n150_dT_r0.01, aes(x=as.factor(scent_load), y=max_prevalence, fill=as.factor(pathogen_load)))
 ii<- ii+ geom_boxplot() #+ geom_jitter(alpha=0.5)
 ii <- ii + facet_grid(scent_decay~ inf_decay, labeller = labeller(
   scent_decay = c("0.01" = "Slow scent decay", "0.1"="Med. scent decay", "1"= "Fast scent decay"),
@@ -328,7 +448,7 @@ ii<- ii + geom_vline(xintercept=c(6.5,12.5), linetype="dashed")
 ii<- ii + theme(plot.margin=unit(c(0.1,0.1,0,0.1), "cm"))
 ii
 
-ii<- ggplot(data=sub_n100_dT_r0.01, aes(x=as.factor(scent_load), y=duration, fill=as.factor(pathogen_load)))
+ii<- ggplot(data=sub_n150_dT_r0.01, aes(x=as.factor(scent_load), y=duration, fill=as.factor(pathogen_load)))
 ii<- ii+ geom_boxplot() #+ geom_jitter(alpha=0.5)
 ii <- ii + facet_grid(scent_decay~ inf_decay, labeller = labeller(
   scent_decay = c("0.01" = "Slow scent decay", "0.1"="Med. scent decay", "1"= "Fast scent decay"),
@@ -346,7 +466,7 @@ ii<- ii + theme(plot.margin=unit(c(0.1,0.1,0,0.1), "cm"))
 ii
 
 
-ii<- ggplot(data=sub_n100_dT_r0.01, aes(x=as.factor(inf_decay), y=max_prevalence, fill=as.factor(scent_decay)))
+ii<- ggplot(data=sub_n150_dT_r0.01, aes(x=as.factor(inf_decay), y=max_prevalence, fill=as.factor(scent_decay)))
 # ii<- ii+ geom_boxplot() #+ geom_jitter(alpha=0.5)
 # ii<- ii+ stat_summary(fun.y=mean, geom="point", col="blue")
 ii <- ii+ geom_boxplot() + facet_grid(scent_load~ pathogen_load, labeller = labeller(
@@ -363,7 +483,7 @@ ii<- ii + geom_vline(xintercept=c(6.5,12.5), linetype="dashed")
 ii<- ii + theme(plot.margin=unit(c(0.1,0.1,0,0.1), "cm"))
 ii
 
-ii<- ggplot(data=sub_n100_dT_r0.01, aes(x=as.factor(inf_decay), y=duration, fill=as.factor(scent_decay)))
+ii<- ggplot(data=sub_n150_dT_r0.01, aes(x=as.factor(inf_decay), y=duration, fill=as.factor(scent_decay)))
 # ii<- ii+ geom_boxplot() #+ geom_jitter(alpha=0.5)
 # ii<- ii+ stat_summary(fun.y=mean, geom="point", col="blue")
 ii <- ii+ geom_boxplot() + facet_grid(scent_load~ pathogen_load, labeller = labeller(
