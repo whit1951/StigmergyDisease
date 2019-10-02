@@ -1,5 +1,5 @@
 # StigmergyDisease
-Code for: "A mechanistic, stigmergy model of territory formation in asocial animals: Territorial behavior can dampen disease persistence"
+Code for: "A mechanistic, stigmergy model of territory formation in asocial animals: Territorial behavior can dampen disease prevalence but increase persistence"
 * Simulation models to explore the consequences of stigmergy on territory formation and disease spread
 
 ## Results
