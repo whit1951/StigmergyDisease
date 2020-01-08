@@ -60,6 +60,22 @@ merged_data[which(is.na(merged_data$duration)),]
 
 merged_data<-rbind(merged_data, merged_data150)
 
+results_df<-matrix(data=NA, nrow=length(summaries), ncol=13)
+results_df <- data.frame(n.initial=integer(), rec_rate=double(), scent_load=double(), pathogen_load=double(), scent_decay=double(), inf_decay=double(), 
+                         dir_move=logical(), mean_dur=double(), med_dur
+                 Ints=integer(),
+                 Factors=factor(),
+                 Logicals=logical(),
+                 Characters=character(),
+                 stringsAsFactors=FALSE)
+
+for (i in 1:length(summaries)){
+  df<-read.csv(summaries[i])
+  results_df[i,1:13]<-as.vector(df[1,3:9], mean(df$duration), median(df$duration), max(df$duration), mean(df$max_prevalence), median(df$max_prevalence), max(df$duration))
+}
+
+
+
 #Create character strings for landscape structure (Hurst exponent and proportion available habitat)
 merged_data$PL<-NA #pathogen load
 merged_data$SL<-NA #scent load
@@ -101,7 +117,57 @@ sub_n150_dT_r0.01<-merged_data[which(merged_data$dir_move==TRUE & merged_data$re
 sub_n150_dT_r0.05<-merged_data[which(merged_data$dir_move==TRUE & merged_data$rec_rate==0.05 & merged_data$n.initial==150),]
 sub_n150_dT_r0.1<-merged_data[which(merged_data$dir_move==TRUE & merged_data$rec_rate==0.1 & merged_data$n.initial==150),]
 
+sub_n50_dF_r0.01<-merged_data[which(merged_data$dir_move==FALSE & merged_data$rec_rate==0.01 & merged_data$n.initial==50),]
+sub_n50_dF_r0.05<-merged_data[which(merged_data$dir_move==FALSE & merged_data$rec_rate==0.05 & merged_data$n.initial==50),]
+sub_n50_dF_r0.1<-merged_data[which(merged_data$dir_move==FALSE & merged_data$rec_rate==0.1 & merged_data$n.initial==50),]
 
+sub_n100_dF_r0.01<-merged_data[which(merged_data$dir_move==FALSE & merged_data$rec_rate==0.01 & merged_data$n.initial==100),]
+sub_n100_dF_r0.05<-merged_data[which(merged_data$dir_move==FALSE & merged_data$rec_rate==0.05 & merged_data$n.initial==100),]
+sub_n100_dF_r0.1<-merged_data[which(merged_data$dir_move==FALSE & merged_data$rec_rate==0.1 & merged_data$n.initial==100),]
+
+sub_n150_dF_r0.01<-merged_data[which(merged_data$dir_move==FALSE & merged_data$rec_rate==0.01 & merged_data$n.initial==150),]
+sub_n150_dF_r0.05<-merged_data[which(merged_data$dir_move==FALSE & merged_data$rec_rate==0.05 & merged_data$n.initial==150),]
+sub_n150_dF_r0.1<-merged_data[which(merged_data$dir_move==FALSE & merged_data$rec_rate==0.1 & merged_data$n.initial==150),]
+
+
+
+# Delta Prevalence and Duration -------------------------------------------
+
+median(sub_n150_dF_r0.01$max_prevalence)
+median(sub_n150_dT_r0.01$max_prevalence)
+
+mean(sub_n150_dF_r0.01$max_prevalence)
+mean(sub_n150_dT_r0.01$max_prevalence)
+
+max(sub_n150_dF_r0.01$max_prevalence)
+max(sub_n150_dT_r0.01$max_prevalence)
+
+median(sub_n150_dF_r0.01$duration)
+median(sub_n150_dT_r0.01$duration)
+
+mean(sub_n150_dF_r0.01$duration)
+mean(sub_n150_dT_r0.01$duration)
+
+max(sub_n150_dF_r0.01$duration)
+max(sub_n150_dT_r0.01$duration)
+
+median(sub_n150_dF_r0.05$max_prevalence)
+median(sub_n150_dT_r0.05$max_prevalence)
+
+mean(sub_n150_dF_r0.05$max_prevalence)
+mean(sub_n150_dT_r0.05$max_prevalence)
+
+max(sub_n150_dF_r0.05$max_prevalence)
+max(sub_n150_dT_r0.05$max_prevalence)
+
+median(sub_n150_dF_r0.1$max_prevalence)
+median(sub_n150_dT_r0.1$max_prevalence)
+
+mean(sub_n150_dF_r0.1$max_prevalence)
+mean(sub_n150_dT_r0.1$max_prevalence)
+
+max(sub_n150_dF_r0.1$max_prevalence)
+max(sub_n150_dT_r0.1$max_prevalence)
 # HEATMAPS ----------------------------------------------------------------
 
 ##Heatmap of max_prevelance for n.initial=50 (Decay rates)
