@@ -92,6 +92,7 @@ sub_n150_dT_r0.1<-merged_data[which(merged_data$dir_move==TRUE & merged_data$rec
 Plotting movement trajectories from `ToyModelStigmergy.R`
 ```{r}
 source('~/StigmergyDisease/ToyModelStigmergy.R')
+library(tidyr)
 
 movedat<-t(movedat)
 rownames(movedat)<-1:nrow(movedat)
@@ -120,7 +121,7 @@ colnames(movedf)[colnames(movedf)=="time"] <- "time_step"
 m <- ggplot(movedf, aes(xloc, yloc, color=AnimalID))+
   geom_path(show.legend=FALSE)+xlab(NULL)+ylab(NULL)+
   theme(legend.position = "none") 
-tiff("Fig2.tiff", height =8 , width =9, units = "cm", compression = "lzw", res = 600)
+tiff("Fig2.tiff", height =4 , width =3.9, units = "in", compression = "lzw", res = 600)
   m
 dev.off()
 ```
@@ -131,17 +132,17 @@ Random forest variable importance plots for: (A) outbreak success; (B) maximum p
 
 ```{r}
 #Load importance values (party package)
-imp_logit<-read.csv("partyRF_logit500.csv")
-imp_logitprev<-read.csv("partyRF_logitprev500.csv")
-imp_logitdur<-read.csv("partyRF_logitdur500.csv")
+imp_logit<-read.csv("imp_logit.csv")
+imp_logitprev<-read.csv("imp_prev.csv")
+imp_logitdur<-read.csv("imp_dur.csv")
 
 #Order according to increasing node purity
-imp_logit<-imp_logit[order(imp_logit$x),]
-imp_logitdur<-imp_logitdur[order(imp_logitdur$x),] 
-imp_logitprev<-imp_logitprev[order(imp_logitprev$x),] 
+imp_logit<-imp_logit[order(imp_logit$MeanDecreaseAccuracy),]
+imp_logitdur<-imp_logitdur[order(imp_logitdur$X.IncMSE),] 
+imp_logitprev<-imp_logitprev[order(imp_logitprev$X.IncMSE),] 
 
 #In ggplot
-A<-ggplot(imp_logit, aes(x=reorder(X,x), y=x)) + 
+A<-ggplot(imp_logit, aes(x=reorder(X,MeanDecreaseAccuracy), y=MeanDecreaseAccuracy)) + 
   geom_bar(position=position_dodge(), stat="identity",
            colour="black", # Use black outlines,
            size=.3) +      # Thinner lines
@@ -149,19 +150,17 @@ A<-ggplot(imp_logit, aes(x=reorder(X,x), y=x)) +
   #               size=.3,    # Thinner lines
   #               width=.2,
   #               position=position_dodge(.9)) +
-  scale_x_discrete(element_blank(), labels = c("scent_decay" = expression(delta), "rec_rate"=expression(gamma),
-                                               "scent_load" =  expression(eta[0]),"n.initial" = "N", "dir_move" = "m",
-                                               "pathogen_load" = expression(kappa[0]), "inf_decay"=expression(alpha))) +  #ylab("Mean Decrease in Accuracy (%IncMSE)") +
+scale_x_discrete(element_blank(), labels = c("scent_decay" = expression(paste("Scent decay (", delta, ")")), "rec_rate"=expression(paste("Recovery rate (", gamma, ")")), "scent_load" =  expression(paste("Scent load (", eta[0], ")")),"n.initial" = "Host density (N)", "dir_move" = "Movement type (m)","pathogen_load" = expression(paste("Pathogen load (", kappa[0], ")")), "inf_decay"=expression(paste("Pathogen decay rate (", alpha, ")"))))+ 
   ylab("")+
   theme_bw()+
-  ggtitle("(A)") + #" Variable Importance for Epidemic \nSuccess") +
+  ggtitle("(A) Outbreak Success") + #" Variable Importance for Epidemic \nSuccess") +
   theme(axis.text=element_text(size=10), plot.title = element_text(size = 12)) +
   theme(plot.margin=unit(c(0.1,0.2,0, 0), "cm"))+
   coord_flip()
 # theme_bw(axis.text=element_text(size=14),    axis.title=element_text(size=14,face="bold"), plot.title = element_text(size = 40))
 A
 #imp_logitprev$SD<-rep(0.0000001, times=nrow(imp_logitprev))
-B<-ggplot(imp_logitprev, aes(x=reorder(X,x), y=x)) + 
+B<-ggplot(imp_logitprev, aes(x=reorder(X,X.IncMSE), y=X.IncMSE)) + 
   geom_bar(position=position_dodge(), stat="identity",
            colour="black", # Use black outlines,
            size=.3) +      # Thinner lines
@@ -169,19 +168,16 @@ B<-ggplot(imp_logitprev, aes(x=reorder(X,x), y=x)) +
   #               size=.3,    # Thinner lines
   #               width=.2,
   #               position=position_dodge(.9)) +
-  scale_x_discrete(element_blank(), labels = c("scent_decay" = expression(delta), "rec_rate"=expression(gamma),
-                                               "scent_load" =  expression(eta[0]),"n.initial" = "N", "dir_move" = "m",
-                                               "pathogen_load" = expression(kappa[0]), "inf_decay"=expression(alpha))) +
-  #ylab("Mean Decrease in Accuracy (%IncMSE)") +
+  scale_x_discrete(element_blank(), labels = c("scent_decay" = expression(paste("Scent decay (", delta, ")")), "rec_rate"=expression(paste("Recovery rate (", gamma, ")")), "scent_load" =  expression(paste("Scent load (", eta[0], ")")),"n.initial" = "Host density (N)", "dir_move" = "Movement type (m)","pathogen_load" = expression(paste("Pathogen load (", kappa[0], ")")), "inf_decay"=expression(paste("Pathogen decay rate (", alpha, ")"))))+ 
   ylab("")+
   theme_bw()+
-  ggtitle("(B)") + #" Variable Importance for Maximum \nPrevalence|Success") +
+  ggtitle("(B) Maximum Prevalence") + #" Variable Importance for Maximum \nPrevalence|Success") +
   theme(axis.text=element_text(size=10), plot.title = element_text(size = 12)) +
   theme(plot.margin=unit(c(-0.25,0.2,0,0), "cm"))+
   coord_flip()
 B
 #imp_logitdur$SD<-rep(100, times=nrow(imp_logitdur))
-C<-ggplot(imp_logitdur, aes(x=reorder(X,x), y=x)) + 
+C<-ggplot(imp_logitdur, aes(x=reorder(X,X.IncMSE), y=X.IncMSE)) + 
   geom_bar(position=position_dodge(), stat="identity",
            colour="black", # Use black outlines,
            size=.3) +      # Thinner lines
@@ -189,19 +185,18 @@ C<-ggplot(imp_logitdur, aes(x=reorder(X,x), y=x)) +
   #               size=.3,    # Thinner lines
   #               width=.2,
   #               position=position_dodge(.9)) +
-  scale_x_discrete(element_blank(), labels = c("scent_decay" = expression(delta), "rec_rate"=expression(gamma),
-                                               "scent_load" =  expression(eta[0]),"n.initial" = "N", "dir_move" = "m",
-                                               "pathogen_load" = expression(kappa[0]), "inf_decay"=expression(alpha))) +
-  ylab("Mean Decrease in Accuracy (%IncMSE)") +
+  scale_x_discrete(element_blank(), labels = c("scent_decay" = expression(paste("Scent decay (", delta, ")")), "rec_rate"=expression(paste("Recovery rate (", gamma, ")")), "scent_load" =  expression(paste("Scent load (", eta[0], ")")),"n.initial" = "Host density (N)", "dir_move" = "Movement type (m)","pathogen_load" = expression(paste("Pathogen load (", kappa[0], ")")), "inf_decay"=expression(paste("Pathogen decay rate (", alpha, ")"))))+ 
+  
+  ylab("Mean Decrease in Accuracy") +
   theme_bw()+
-  ggtitle("(C)") + #" Variable Importance for Epidemic \nDuration|Success") +
+  ggtitle("(C) Duration") + #" Variable Importance for Epidemic \nDuration|Success") +
   
   theme(axis.text=element_text(size=10), plot.title = element_text(size = 12)) +
   theme(plot.margin=unit(c(-0.25,0.2,0,0), "cm"))+
   coord_flip()
 C
 #setwd()
-tiff("Fig3.tiff", height =12 , width =8, units = "cm", compression = "lzw", res = 600)
+tiff("Fig3.tiff", height =12 , width =10, units = "cm", compression = "lzw", res = 600)
 multiplot(A, B, C, cols=1)
 dev.off()
 ```
@@ -209,12 +204,32 @@ dev.off()
 
 ## Figure 4
 ```{r}
-gg<- ggplot(data=size150, aes(y=max_prevalence, x=as.factor(rec_rate)))
-#gg<- gg+ geom_bar(stat="identity", position=position_dodge(), colour="black")+ facet_grid(Rec.prob. ~ percep, scales= "free_x", labeller=label_both)
-gg<-gg+ geom_boxplot()+ facet_grid(dir_move~ inf_decay, scales= "free_x", labeller= labeller(
+library(doBy)
+merged_data_stig<-size150[which(size150$dir_move==TRUE),]
+
+merged_data_rand<-size150[which(size150$dir_move==FALSE),]
+
+mean_prev_stig <- summaryBy(max_prevalence~n.initial+ rec_rate+scent_load +pathogen_load +scent_decay + inf_decay +dir_move, data=merged_data_stig, FUN=mean)
+
+mean_dur_stig <- summaryBy(duration~n.initial+ rec_rate+scent_load +pathogen_load +scent_decay + inf_decay +dir_move, data=merged_data_stig, FUN=mean)
+
+mean_prev_rand <- summaryBy(max_prevalence~n.initial+ rec_rate+scent_load +pathogen_load +scent_decay + inf_decay +dir_move, data=merged_data_rand, FUN=mean)
+
+mean_dur_rand <- summaryBy(duration~n.initial+ rec_rate+scent_load +pathogen_load +scent_decay + inf_decay +dir_move, data=merged_data_rand, FUN=mean)
+
+
+
+# Difference in mean prevalence -------------------------------------------
+
+delta_mean_prev<-mean_prev_rand
+delta_mean_prev$max_prevalence.mean.stig<-mean_prev_stig$max_prevalence.mean
+delta_mean_prev$diff<-mean_prev_stig$max_prevalence.mean- mean_prev_rand$max_prevalence.mean 
+
+gg<- ggplot(data=delta_mean_prev, aes(y=diff, x=as.factor(rec_rate)))
+gg<-gg+ geom_boxplot()+ facet_grid( ~ inf_decay, scales= "free_x", labeller= labeller(
   dir_move = c("FALSE" = "Random", "TRUE"="Stigmergy"),
   inf_decay = c("0.01" = "Slow pathogen decay", "0.1"="Med. pathogen decay", "1" = "Fast pathogen decay")))
-gg<- gg+ labs(x = expression(Recovery~rate~(gamma)), y = "Maximum prevalence") #,title="(A)")
+gg<- gg+ labs(x = expression(Recovery~rate~(gamma)), y = "Difference in mean maximum prevalence (stigmergy-random)") #,title="(A)")
 #gg<- gg+ theme(axis.title.x = element_text(face="bold", size=10),title=element_text(face="bold", size=10))
 gg<- gg + theme(axis.text = element_text(size=12))
 gg<- gg + theme(axis.text.x =element_text(vjust= 0, angle=-90))
@@ -226,12 +241,16 @@ gg<- gg + ggtitle("(A)")
 #gg<-gg + geom_text(data = means , aes(label = duration, y = duration + 0.08))
 gg
 
-hh<- ggplot(data=size150, aes(y=duration, x=as.factor(rec_rate)))
-#hh<- hh+ geom_bar(stat="identity", position=position_dodge(), colour="black")+ facet_grid(Rec.prob. ~ percep, scales= "free_x", labeller=label_both)
-hh<-hh+ geom_boxplot()+ facet_grid(dir_move~ inf_decay, scales= "free_x", labeller= labeller(
+
+delta_mean_dur<-mean_dur_rand
+delta_mean_dur$duration.mean.stig<-mean_dur_stig$duration.mean
+delta_mean_dur$diff<-mean_dur_stig$duration.mean- mean_dur_rand$duration.mean
+
+hh<- ggplot(data=delta_mean_dur, aes(y=diff, x=as.factor(rec_rate)))
+hh<-hh+ geom_boxplot()+ facet_grid( ~ inf_decay, scales= "free_x", labeller= labeller(
   dir_move = c("FALSE" = "Random", "TRUE"="Stigmergy"),
   inf_decay = c("0.01" = "Slow pathogen decay", "0.1"="Med. pathogen decay", "1" = "Fast pathogen decay")))
-hh<- hh+ labs(x = expression(Recovery~rate~(gamma)), y = "Duration") #,title="(A)")
+hh<- hh+ labs(x = expression(Recovery~rate~(gamma)), y = "Difference in mean duration (stigmergy-random)") #,title="(A)")
 #hh<- hh+ theme(axis.title.x = element_text(face="bold", size=10),title=element_text(face="bold", size=10))
 hh<- hh + theme(axis.text = element_text(size=12))
 hh<- hh + theme(axis.text.x =element_text(vjust= 0, angle=-90))
@@ -243,19 +262,39 @@ hh<- hh + ggtitle("(B)")
 #hh<-hh + geom_text(data = means , aes(label = duration, y = duration + 0.08))
 hh
 
-tiff("Fig4.tiff", height =22.23 , width =19.05, units = "cm", compression = "lzw", res = 600)
+multiplot(gg, hh, cols=1)
+
+tiff("Fig4.tiff", height =8.75 , width =6.34, units = "in", compression = "lzw", res = 600)
 multiplot(gg, hh, cols=1)
 dev.off()
 ```
 
 ## Figure S1
 ```{r}
-gg<- ggplot(data=size100, aes(y=max_prevalence, x=as.factor(rec_rate)))
-#gg<- gg+ geom_bar(stat="identity", position=position_dodge(), colour="black")+ facet_grid(Rec.prob. ~ percep, scales= "free_x", labeller=label_both)
-gg<-gg+ geom_boxplot()+ facet_grid(dir_move~ inf_decay, scales= "free_x", labeller= labeller(
+merged_data_stig<-size100[which(merged_data$dir_move==TRUE),]
+merged_data_rand<-size100[which(merged_data$dir_move==FALSE),]
+
+mean_prev_stig <- summaryBy(max_prevalence~n.initial+ rec_rate+scent_load +pathogen_load +scent_decay + inf_decay +dir_move, data=merged_data_stig, FUN=mean)
+
+mean_dur_stig <- summaryBy(duration~n.initial+ rec_rate+scent_load +pathogen_load +scent_decay + inf_decay +dir_move, data=merged_data_stig, FUN=mean)
+
+mean_prev_rand <- summaryBy(max_prevalence~n.initial+ rec_rate+scent_load +pathogen_load +scent_decay + inf_decay +dir_move, data=merged_data_rand, FUN=mean)
+
+mean_dur_rand <- summaryBy(duration~n.initial+ rec_rate+scent_load +pathogen_load +scent_decay + inf_decay +dir_move, data=merged_data_rand, FUN=mean)
+
+
+
+# Difference in mean prevalence -------------------------------------------
+
+delta_mean_prev<-mean_prev_rand
+delta_mean_prev$max_prevalence.mean.stig<-mean_prev_stig$max_prevalence.mean
+delta_mean_prev$diff<-mean_prev_stig$max_prevalence.mean- mean_prev_rand$max_prevalence.mean 
+
+gg<- ggplot(data=delta_mean_prev, aes(y=diff, x=as.factor(rec_rate)))
+gg<-gg+ geom_boxplot()+ facet_grid( ~ inf_decay, scales= "free_x", labeller= labeller(
   dir_move = c("FALSE" = "Random", "TRUE"="Stigmergy"),
   inf_decay = c("0.01" = "Slow pathogen decay", "0.1"="Med. pathogen decay", "1" = "Fast pathogen decay")))
-gg<- gg+ labs(x = expression(Recovery~rate~(gamma)), y = "Maximum prevalence") #,title="(A)")
+gg<- gg+ labs(x = expression(Recovery~rate~(gamma)), y = "Difference in mean maximum prevalence (stigmergy-random)") #,title="(A)")
 #gg<- gg+ theme(axis.title.x = element_text(face="bold", size=10),title=element_text(face="bold", size=10))
 gg<- gg + theme(axis.text = element_text(size=12))
 gg<- gg + theme(axis.text.x =element_text(vjust= 0, angle=-90))
@@ -267,12 +306,16 @@ gg<- gg + ggtitle("(A)")
 #gg<-gg + geom_text(data = means , aes(label = duration, y = duration + 0.08))
 gg
 
-hh<- ggplot(data=size100, aes(y=duration, x=as.factor(rec_rate)))
-#hh<- hh+ geom_bar(stat="identity", position=position_dodge(), colour="black")+ facet_grid(Rec.prob. ~ percep, scales= "free_x", labeller=label_both)
-hh<-hh+ geom_boxplot()+ facet_grid(dir_move~ inf_decay, scales= "free_x", labeller= labeller(
+
+delta_mean_dur<-mean_dur_rand
+delta_mean_dur$duration.mean.stig<-mean_dur_stig$duration.mean
+delta_mean_dur$diff<-mean_dur_stig$duration.mean- mean_dur_rand$duration.mean
+
+hh<- ggplot(data=delta_mean_dur, aes(y=diff, x=as.factor(rec_rate)))
+hh<-hh+ geom_boxplot()+ facet_grid( ~ inf_decay, scales= "free_x", labeller= labeller(
   dir_move = c("FALSE" = "Random", "TRUE"="Stigmergy"),
   inf_decay = c("0.01" = "Slow pathogen decay", "0.1"="Med. pathogen decay", "1" = "Fast pathogen decay")))
-hh<- hh+ labs(x = expression(Recovery~rate~(gamma)), y = "Duration") #,title="(A)")
+hh<- hh+ labs(x = expression(Recovery~rate~(gamma)), y = "Difference in mean duration (stigmergy-random)") #,title="(A)")
 #hh<- hh+ theme(axis.title.x = element_text(face="bold", size=10),title=element_text(face="bold", size=10))
 hh<- hh + theme(axis.text = element_text(size=12))
 hh<- hh + theme(axis.text.x =element_text(vjust= 0, angle=-90))
@@ -283,6 +326,7 @@ hh<- hh + theme(plot.margin=unit(c(0.1,0.1,0,0.1), "cm"))
 hh<- hh + ggtitle("(B)")
 #hh<-hh + geom_text(data = means , aes(label = duration, y = duration + 0.08))
 hh
+
 
 tiff("S1Fig.tiff", height =22.23 , width =19.05, units = "cm", compression = "lzw", res = 600)
 multiplot(gg, hh, cols=1)
@@ -291,12 +335,30 @@ dev.off()
 
 ## Figure S2
 ```{r}
-gg<- ggplot(data=size50, aes(y=max_prevalence, x=as.factor(rec_rate)))
-#gg<- gg+ geom_bar(stat="identity", position=position_dodge(), colour="black")+ facet_grid(Rec.prob. ~ percep, scales= "free_x", labeller=label_both)
-gg<-gg+ geom_boxplot()+ facet_grid(dir_move~ inf_decay, scales= "free_x", labeller= labeller(
+merged_data_stig<-size50[which(merged_data$dir_move==TRUE),]
+merged_data_rand<-size50[which(merged_data$dir_move==FALSE),]
+
+mean_prev_stig <- summaryBy(max_prevalence~n.initial+ rec_rate+scent_load +pathogen_load +scent_decay + inf_decay +dir_move, data=merged_data_stig, FUN=mean)
+
+mean_dur_stig <- summaryBy(duration~n.initial+ rec_rate+scent_load +pathogen_load +scent_decay + inf_decay +dir_move, data=merged_data_stig, FUN=mean)
+
+mean_prev_rand <- summaryBy(max_prevalence~n.initial+ rec_rate+scent_load +pathogen_load +scent_decay + inf_decay +dir_move, data=merged_data_rand, FUN=mean)
+
+mean_dur_rand <- summaryBy(duration~n.initial+ rec_rate+scent_load +pathogen_load +scent_decay + inf_decay +dir_move, data=merged_data_rand, FUN=mean)
+
+
+
+# Difference in mean prevalence -------------------------------------------
+
+delta_mean_prev<-mean_prev_rand
+delta_mean_prev$max_prevalence.mean.stig<-mean_prev_stig$max_prevalence.mean
+delta_mean_prev$diff<-mean_prev_stig$max_prevalence.mean- mean_prev_rand$max_prevalence.mean 
+
+gg<- ggplot(data=delta_mean_prev, aes(y=diff, x=as.factor(rec_rate)))
+gg<-gg+ geom_boxplot()+ facet_grid( ~ inf_decay, scales= "free_x", labeller= labeller(
   dir_move = c("FALSE" = "Random", "TRUE"="Stigmergy"),
   inf_decay = c("0.01" = "Slow pathogen decay", "0.1"="Med. pathogen decay", "1" = "Fast pathogen decay")))
-gg<- gg+ labs(x = expression(Recovery~rate~(gamma)), y = "Maximum prevalence") #,title="(A)")
+gg<- gg+ labs(x = expression(Recovery~rate~(gamma)), y = "Difference in mean maximum prevalence (stigmergy-random)") #,title="(A)")
 #gg<- gg+ theme(axis.title.x = element_text(face="bold", size=10),title=element_text(face="bold", size=10))
 gg<- gg + theme(axis.text = element_text(size=12))
 gg<- gg + theme(axis.text.x =element_text(vjust= 0, angle=-90))
@@ -308,12 +370,16 @@ gg<- gg + ggtitle("(A)")
 #gg<-gg + geom_text(data = means , aes(label = duration, y = duration + 0.08))
 gg
 
-hh<- ggplot(data=size50, aes(y=duration, x=as.factor(rec_rate)))
-#hh<- hh+ geom_bar(stat="identity", position=position_dodge(), colour="black")+ facet_grid(Rec.prob. ~ percep, scales= "free_x", labeller=label_both)
-hh<-hh+ geom_boxplot()+ facet_grid(dir_move~ inf_decay, scales= "free_x", labeller= labeller(
+
+delta_mean_dur<-mean_dur_rand
+delta_mean_dur$duration.mean.stig<-mean_dur_stig$duration.mean
+delta_mean_dur$diff<-mean_dur_stig$duration.mean- mean_dur_rand$duration.mean
+
+hh<- ggplot(data=delta_mean_dur, aes(y=diff, x=as.factor(rec_rate)))
+hh<-hh+ geom_boxplot()+ facet_grid( ~ inf_decay, scales= "free_x", labeller= labeller(
   dir_move = c("FALSE" = "Random", "TRUE"="Stigmergy"),
   inf_decay = c("0.01" = "Slow pathogen decay", "0.1"="Med. pathogen decay", "1" = "Fast pathogen decay")))
-hh<- hh+ labs(x = expression(Recovery~rate~(gamma)), y = "Duration") #,title="(A)")
+hh<- hh+ labs(x = expression(Recovery~rate~(gamma)), y = "Difference in mean duration (stigmergy-random)") #,title="(A)")
 #hh<- hh+ theme(axis.title.x = element_text(face="bold", size=10),title=element_text(face="bold", size=10))
 hh<- hh + theme(axis.text = element_text(size=12))
 hh<- hh + theme(axis.text.x =element_text(vjust= 0, angle=-90))
@@ -324,6 +390,7 @@ hh<- hh + theme(plot.margin=unit(c(0.1,0.1,0,0.1), "cm"))
 hh<- hh + ggtitle("(B)")
 #hh<-hh + geom_text(data = means , aes(label = duration, y = duration + 0.08))
 hh
+
 
 tiff("FigS2.tiff", height =22.23 , width =19.05, units = "cm", compression = "lzw", res = 600)
 multiplot(gg, hh, cols=1)
@@ -333,7 +400,8 @@ dev.off()
 Heatmap duration for n.initial=150, dir_move=T, and recovery rate= 0.01
 
 ```{r}
-sdf <- summaryBy(max_prevalence~ rec_rate+scent_load +pathogen_load +scent_decay + inf_decay +dir_move, data=sub_n150_dT_r0.01, FUN=mean)
+lowhigh<-sub_n150_dT_r0.01[which(sub_n150_dT_r0.01$inf_decay!=0.1 & sub_n150_dT_r0.01$scent_decay!=0.1),] #include only low and high pathogen and scent decay rates
+sdf <- summaryBy(max_prevalence~ rec_rate+scent_load +pathogen_load +scent_decay + inf_decay +dir_move, data=lowhigh, FUN=mean)
 gg <- ggplot(sdf, aes(x=as.factor(pathogen_load), y=as.factor(scent_load), fill=max_prevalence.mean))
 gg <- gg + geom_tile(color="white", size=0.1)
 gg <- gg + scale_fill_viridis(name="Mean\nmaximum\nprevalence")
@@ -351,7 +419,7 @@ gg<- gg + theme(legend.text = element_text(vjust=0.5, size=10), legend.title=ele
 gg<- gg+ ggtitle("(A)")
 gg
 
-sdf <- summaryBy(duration~ rec_rate+scent_load +pathogen_load +scent_decay + inf_decay +dir_move, data=sub_n150_dT_r0.01, FUN=mean)
+sdf <- summaryBy(duration~ rec_rate+scent_load +pathogen_load +scent_decay + inf_decay +dir_move, data=lowhigh, FUN=mean)
 hh <- ggplot(sdf, aes(x=as.factor(pathogen_load), y=as.factor(scent_load), fill=duration.mean))
 hh <- hh + geom_tile(color="white", size=0.1)
 hh <- hh + scale_fill_viridis(name="Mean\nduration")
@@ -728,7 +796,9 @@ dev.off()
 
 ## Figure 6
 ```{r}
-ii<- ggplot(data=sub_n150_dT_r0.01, aes(x=as.factor(inf_decay), y=max_prevalence, fill=as.factor(scent_decay)))
+lowhigh<-sub_n150_dT_r0.01[which(sub_n150_dT_r0.01$PL!="medPL" & sub_n150_dT_r0.01$SL!="medSL"),] #include only low and high pathogen and scent decay rates
+
+ii<- ggplot(data=lowhigh, aes(x=as.factor(inf_decay), y=max_prevalence, fill=as.factor(scent_decay)))
 # ii<- ii+ geom_boxplot() #+ geom_jitter(alpha=0.5)
 # ii<- ii+ stat_summary(fun.y=mean, geom="point", col="blue")
 ii <- ii+ geom_boxplot() + facet_grid(scent_load~ pathogen_load, labeller = labeller(
@@ -745,7 +815,7 @@ ii<- ii + geom_vline(xintercept=c(6.5,12.5), linetype="dashed")
 ii<- ii + theme(plot.margin=unit(c(0.1,0.1,0,0.1), "cm"))
 ii
 
-jj<- ggplot(data=sub_n150_dT_r0.01, aes(x=as.factor(inf_decay), y=duration, fill=as.factor(scent_decay)))
+jj<- ggplot(data=lowhigh, aes(x=as.factor(inf_decay), y=duration, fill=as.factor(scent_decay)))
 # jj<- jj+ geom_boxplot() #+ geom_jitter(alpha=0.5)
 # jj<- jj+ stat_summary(fun.y=mean, geom="point", col="blue")
 jj <- jj+ geom_boxplot() + facet_grid(scent_load~ pathogen_load, labeller = labeller(
