@@ -60,20 +60,6 @@ merged_data[which(is.na(merged_data$duration)),]
 
 merged_data<-rbind(merged_data, merged_data150)
 
-results_df<-matrix(data=NA, nrow=length(summaries), ncol=13)
-results_df <- data.frame(n.initial=integer(), rec_rate=double(), scent_load=double(), pathogen_load=double(), scent_decay=double(), inf_decay=double(), 
-                         dir_move=logical(), mean_dur=double(), med_dur
-                 Ints=integer(),
-                 Factors=factor(),
-                 Logicals=logical(),
-                 Characters=character(),
-                 stringsAsFactors=FALSE)
-
-for (i in 1:length(summaries)){
-  df<-read.csv(summaries[i])
-  results_df[i,1:13]<-as.vector(df[1,3:9], mean(df$duration), median(df$duration), max(df$duration), mean(df$max_prevalence), median(df$max_prevalence), max(df$duration))
-}
-
 
 
 #Create character strings for landscape structure (Hurst exponent and proportion available habitat)
