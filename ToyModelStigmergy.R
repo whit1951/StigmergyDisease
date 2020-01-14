@@ -78,7 +78,7 @@ landscape[which(landscape>1)]<-landscape[which(landscape>1)]*exp(-scent_decay*1)
 for(i in 1:n.initial)
 {
   #array[row, col, layer]
-  landscape[inds$y[i], inds$x[i], i]<-dur_scent #at new location, deposit scent mark of initial strength
+  landscape[inds$y[i], inds$x[i], i]<-scent_load #at new location, deposit scent mark of initial strength
 }
 
 #Exposed to scent mark in this latest move? if sum of scent layers > individual deposition, exposure = Y
