@@ -12,7 +12,10 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Load libraries
 
 ```{r}
+library(doBy)
 library(ggplot2)
+library(viridis)
+library(ggthemes)
 ```
 
 ## Load multiplot function
@@ -59,7 +62,7 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 
 ```
 
-## Load data
+## Load data and create subsets
 ```{r}
 merged_data<-read.csv("stig_summary.csv")
 
@@ -271,8 +274,10 @@ dev.off()
 
 ## Figure S1
 ```{r}
-merged_data_stig<-size100[which(merged_data$dir_move==TRUE),]
-merged_data_rand<-size100[which(merged_data$dir_move==FALSE),]
+library(doBy)
+merged_data_stig<-size100[which(size100$dir_move==TRUE),]
+
+merged_data_rand<-size100[which(size100$dir_move==FALSE),]
 
 mean_prev_stig <- summaryBy(max_prevalence~n.initial+ rec_rate+scent_load +pathogen_load +scent_decay + inf_decay +dir_move, data=merged_data_stig, FUN=mean)
 
@@ -327,16 +332,19 @@ hh<- hh + ggtitle("(B)")
 #hh<-hh + geom_text(data = means , aes(label = duration, y = duration + 0.08))
 hh
 
+multiplot(gg, hh, cols=1)
 
-tiff("S1Fig.tiff", height =22.23 , width =19.05, units = "cm", compression = "lzw", res = 600)
+tiff("S1Fig.tiff", height =8.75 , width =6.34, units = "in", compression = "lzw", res = 600)
 multiplot(gg, hh, cols=1)
 dev.off()
 ```
 
 ## Figure S2
 ```{r}
-merged_data_stig<-size50[which(merged_data$dir_move==TRUE),]
-merged_data_rand<-size50[which(merged_data$dir_move==FALSE),]
+library(doBy)
+merged_data_stig<-size50[which(size50$dir_move==TRUE),]
+
+merged_data_rand<-size50[which(size50$dir_move==FALSE),]
 
 mean_prev_stig <- summaryBy(max_prevalence~n.initial+ rec_rate+scent_load +pathogen_load +scent_decay + inf_decay +dir_move, data=merged_data_stig, FUN=mean)
 
@@ -391,8 +399,9 @@ hh<- hh + ggtitle("(B)")
 #hh<-hh + geom_text(data = means , aes(label = duration, y = duration + 0.08))
 hh
 
+multiplot(gg, hh, cols=1)
 
-tiff("FigS2.tiff", height =22.23 , width =19.05, units = "cm", compression = "lzw", res = 600)
+tiff("S2Fig.tiff", height =8.75 , width =6.34, units = "in", compression = "lzw", res = 600)
 multiplot(gg, hh, cols=1)
 dev.off()
 ```
